@@ -1,0 +1,512 @@
+/**
+ * Interview Setup UI Styles
+ * Matches the design in the image
+ */
+
+.interview-setup-ui {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #0a0e14;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero-section {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+.hero-title {
+  margin: 0 auto 0.5rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 900;
+  color: #f2f3f5;
+
+  span {
+    background: linear-gradient(90deg, #ff3f7d, #f28dff 48%, #ff6f91 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.hero-subtitle {
+  margin: 0 auto;
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ============================================
+   INTERVIEW LAYOUT
+   ============================================ */
+
+.interview-layout {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: stretch;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 25, 35, 0.9);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   PANEL STYLES
+   ============================================ */
+
+.panel {
+  background: rgba(34, 40, 49, 0.96);
+  padding: 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 600px;
+}
+
+.left-panel {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  color: #f3f4f6;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.panel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.required-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(236, 85, 125, 0.18);
+  color: #ffb4cd;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border: 1px solid rgba(244, 92, 138, 0.3);
+  white-space: nowrap;
+}
+
+/* ============================================
+   TEXTAREA STYLES
+   ============================================ */
+
+.job-textarea,
+.self-description-textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  outline: none;
+  resize: none;
+  border-radius: 0.85rem;
+  background: rgba(26, 32, 41, 0.9);
+  color: rgba(255, 255, 255, 0.9);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 1rem;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(26, 32, 41, 0.98);
+    box-shadow: 0 0 0 3px rgba(255, 82, 121, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.job-textarea {
+  min-height: 380px;
+  flex: 1;
+}
+
+.self-description-textarea {
+  min-height: 140px;
+}
+
+.char-counter {
+  display: flex;
+  justify-content: flex-end;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.error-message {
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.6rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* ============================================
+   RIGHT PANEL SECTIONS
+   ============================================ */
+
+.right-panel {
+  padding-bottom: 1rem;
+  overflow-y: auto;
+}
+
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upload-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  small {
+    color: rgba(255, 255, 255, 0.48);
+    font-weight: 500;
+    margin-left: 0.2rem;
+  }
+}
+
+.upload-box {
+  position: relative;
+  width: 100%;
+  background: rgba(18, 25, 32, 0.92);
+  border: 1.5px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 1rem;
+  padding: 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-height: 200px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(255, 82, 121, 0.3);
+    background: rgba(18, 25, 32, 0.98);
+  }
+
+  &.drag-over {
+    border-color: rgba(255, 82, 121, 0.6);
+    background: rgba(255, 82, 121, 0.08);
+  }
+
+  &:has(input:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(18, 25, 32, 0.92);
+    }
+  }
+}
+
+.upload-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.upload-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff4d7a, #ff2b61);
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  box-shadow: 0 0 0 10px rgba(255, 82, 121, 0.08);
+}
+
+.upload-box p {
+  max-width: 280px;
+  line-height: 1.5;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.78);
+
+  span {
+    display: block;
+
+    &:first-child {
+      margin-bottom: 0.2rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    &:last-child {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.82rem;
+    }
+  }
+}
+
+.file-selected {
+  margin-top: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.6rem;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+  font-size: 0.85rem;
+  text-align: center;
+  font-weight: 500;
+
+  strong {
+    display: block;
+    margin-top: 0.2rem;
+    word-break: break-all;
+  }
+}
+
+/* ============================================
+   SECTION DIVIDER
+   ============================================ */
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* ============================================
+   SELF DESCRIPTION SECTION
+   ============================================ */
+
+.self-description-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.section-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ============================================
+   INFO BANNER
+   ============================================ */
+
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.8rem;
+  background: rgba(31, 41, 80, 0.75);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  color: #dfeeff;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #64a9ff;
+  box-shadow: 0 0 0 5px rgba(100, 169, 255, 0.2);
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.info-banner p {
+  margin: 0;
+}
+
+/* ============================================
+   GENERATE BAR
+   ============================================ */
+
+.generate-bar {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  background: rgba(18, 25, 35, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ai-note {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.87rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.generate-btn {
+  min-width: 360px;
+  padding: 1.05rem 2rem;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #ff4d7a, #ec2f73);
+  box-shadow: 0 14px 28px rgba(239, 53, 118, 0.32);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.01em;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px rgba(239, 53, 118, 0.42);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1000px) {
+  .interview-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .panel {
+    min-height: auto;
+  }
+
+  .generate-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .generate-btn {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .ai-note {
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .interview-setup-ui {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .panel {
+    padding: 1.25rem 1rem;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .job-textarea {
+    min-height: 280px;
+  }
+
+  .generate-bar {
+    padding: 0.85rem 1rem;
+    gap: 1rem;
+  }
+
+  .generate-btn {
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .ai-note {
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,901 @@
+/* =========================================================
+   HOME / INTERVIEW SETUP PAGE
+   TUTOR STYLE
+========================================================= */
+
+.home-page {
+  min-height: 100vh;
+  width: 100%;
+
+  padding: 42px 50px 35px;
+
+  box-sizing: border-box;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(0, 195, 255, 0.20),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(255, 0, 140, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #061b2d 0%,
+      #073d5c 50%,
+      #061d32 100%
+    );
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.home-header {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto 28px;
+
+  box-sizing: border-box;
+}
+
+.header-icon {
+  width: 34px;
+  height: 34px;
+
+  margin-bottom: 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff0080,
+      #ff3f99
+    );
+
+  color: #fff;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  box-shadow:
+    0 7px 20px rgba(255, 0, 120, 0.25);
+}
+
+.home-header h1 {
+  margin: 0;
+
+  font-size: 32px;
+  line-height: 1.15;
+
+  font-weight: 850;
+
+  letter-spacing: -0.6px;
+
+  color: #ffffff;
+}
+
+.home-header h1 span {
+  color: #ff3c96;
+}
+
+.home-header p {
+  margin: 8px 0 0;
+
+  max-width: 650px;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  font-weight: 500;
+
+  color: rgba(255, 255, 255, 0.68);
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.home-main {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   MAIN FORM CONTAINER
+========================================================= */
+
+.interview-form {
+  width: 100%;
+
+  padding: 28px;
+
+  box-sizing: border-box;
+
+  border-radius: 16px;
+
+  border:
+    1px solid rgba(130, 205, 235, 0.32);
+
+  background:
+    rgba(13, 55, 78, 0.78);
+
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.30);
+
+  backdrop-filter: blur(10px);
+}
+
+
+/* =========================================================
+   TWO COLUMNS
+========================================================= */
+
+.form-columns {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.15fr)
+    minmax(0, 0.85fr);
+
+  gap: 28px;
+
+  align-items: stretch;
+}
+
+
+/* =========================================================
+   FORM SECTION
+========================================================= */
+
+.form-section {
+  min-width: 0;
+
+  padding: 22px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid rgba(130, 205, 235, 0.20);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(46, 105, 140, 0.42),
+      rgba(24, 73, 102, 0.32)
+    );
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.section-heading {
+  width: 100%;
+
+  margin-bottom: 17px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+}
+
+.section-heading > div {
+  min-width: 0;
+}
+
+.section-heading h2 {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 19px;
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  color: #ffffff;
+}
+
+.heading-icon {
+  color: #62eaff;
+
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   REQUIRED BADGE
+========================================================= */
+
+.required-badge {
+  display: inline-block;
+
+  margin-top: 7px;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.9px;
+
+  color: #ff62aa;
+}
+
+
+/* =========================================================
+   TEXTAREAS
+========================================================= */
+
+.job-description-input,
+.profile-input {
+  width: 100%;
+
+  display: block;
+
+  box-sizing: border-box;
+
+  resize: vertical;
+
+  border-radius: 9px;
+
+  border:
+    1px solid rgba(150, 215, 240, 0.28);
+
+  outline: none;
+
+  background:
+    rgba(4, 28, 45, 0.62);
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  line-height: 1.55;
+
+  padding: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.job-description-input {
+  min-height: 270px;
+}
+
+.profile-input {
+  min-height: 135px;
+}
+
+.job-description-input::placeholder,
+.profile-input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.job-description-input:focus,
+.profile-input:focus {
+  border-color: #39dfff;
+
+  background:
+    rgba(3, 31, 49, 0.82);
+
+  box-shadow:
+    0 0 0 2px rgba(57, 223, 255, 0.08);
+}
+
+
+/* =========================================================
+   CHARACTER COUNT
+========================================================= */
+
+.character-count {
+  margin-top: 7px;
+
+  text-align: right;
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  color: rgba(255, 255, 255, 0.48);
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+.profile-section {
+  display: flex;
+
+  flex-direction: column;
+}
+
+
+/* =========================================================
+   UPLOAD HEADING
+========================================================= */
+
+.upload-heading {
+  margin-bottom: 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  color: rgba(255, 255, 255, 0.90);
+}
+
+.best-results-badge {
+  padding: 4px 7px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 43, 139, 0.16);
+
+  border:
+    1px solid rgba(255, 67, 153, 0.32);
+
+  color: #ff5fa8;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   RESUME UPLOAD
+========================================================= */
+
+.resume-upload {
+  width: 100%;
+
+  min-height: 130px;
+
+  padding: 18px;
+
+  box-sizing: border-box;
+
+  border-radius: 10px;
+
+  border:
+    1px dashed rgba(91, 224, 255, 0.48);
+
+  background:
+    rgba(3, 32, 50, 0.50);
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.resume-upload:hover {
+  border-color: #4ee7ff;
+
+  background:
+    rgba(5, 43, 65, 0.72);
+
+  transform: translateY(-1px);
+}
+
+.resume-selected {
+  border-color: #ff3d96;
+
+  background:
+    rgba(255, 0, 125, 0.07);
+}
+
+.upload-icon {
+  width: 34px;
+  height: 34px;
+
+  margin-bottom: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(48, 218, 255, 0.12);
+
+  color: #58e7ff;
+
+  font-size: 18px;
+
+  font-weight: 900;
+}
+
+.upload-main-text {
+  font-size: 11px;
+
+  font-weight: 750;
+
+  color: #ffffff;
+}
+
+.uploaded-file-name {
+  max-width: 100%;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  color: #ff6eae;
+}
+
+.upload-subtext {
+  margin-top: 5px;
+
+  font-size: 9px;
+
+  color: rgba(255, 255, 255, 0.48);
+}
+
+
+/* =========================================================
+   OR DIVIDER
+========================================================= */
+
+.or-divider {
+  width: 100%;
+
+  margin: 14px 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+
+  flex: 1;
+
+  height: 1px;
+
+  background:
+    rgba(255, 255, 255, 0.13);
+}
+
+.or-divider span {
+  font-size: 9px;
+
+  font-weight: 800;
+
+  color: rgba(255, 255, 255, 0.45);
+}
+
+
+/* =========================================================
+   SELF DESCRIPTION
+========================================================= */
+
+.self-description-label {
+  margin-bottom: 8px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  color: rgba(255, 255, 255, 0.90);
+}
+
+
+/* =========================================================
+   INFO MESSAGE
+========================================================= */
+
+.info-message {
+  margin-top: 13px;
+
+  display: flex;
+
+  gap: 7px;
+
+  font-size: 9px;
+
+  line-height: 1.45;
+
+  color: rgba(255, 255, 255, 0.53);
+}
+
+.info-message > span:first-child {
+  color: #ff58a5;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.generation-error {
+  width: 100%;
+
+  margin-top: 18px;
+
+  padding: 11px 13px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid rgba(255, 75, 105, 0.38);
+
+  background:
+    rgba(255, 45, 80, 0.10);
+
+  color: #ff9eae;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.error-icon {
+  width: 20px;
+  height: 20px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ff4968;
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   GENERATION FOOTER
+========================================================= */
+
+.generation-footer {
+  width: 100%;
+
+  margin-top: 25px;
+
+  padding-top: 22px;
+
+  border-top:
+    1px solid rgba(255, 255, 255, 0.12);
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   GENERATION INFO
+========================================================= */
+
+.generation-info {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.sparkle {
+  color: #ff4b9c;
+
+  font-size: 14px;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+
+/* =========================================================
+   GENERATE BUTTON
+========================================================= */
+
+.generate-button {
+  min-width: 245px;
+
+  min-height: 45px;
+
+  padding: 0 22px;
+
+  border: 0;
+
+  border-radius: 24px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ff0080,
+      #ff4298
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 11px;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 9px 25px rgba(255, 0, 120, 0.28);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.generate-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 13px 30px rgba(255, 0, 120, 0.40);
+}
+
+.generate-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+
+/* =========================================================
+   SPINNER
+========================================================= */
+
+.button-spinner {
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  border:
+    2px solid rgba(255, 255, 255, 0.35);
+
+  border-top-color: #ffffff;
+
+  animation:
+    home-spin 0.7s linear infinite;
+}
+
+@keyframes home-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.home-footer {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 22px auto 0;
+
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+.footer-links {
+  display: flex;
+
+  gap: 18px;
+
+  font-size: 9px;
+
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.footer-links span {
+  cursor: pointer;
+
+  transition: color 0.2s ease;
+}
+
+.footer-links span:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+
+/* =========================================================
+   GLOBAL BOX SIZING
+========================================================= */
+
+.home-page,
+.home-page * {
+  box-sizing: border-box;
+}
+
+.home-page button,
+.home-page textarea,
+.home-page input {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .home-page {
+    padding: 30px 24px 30px;
+  }
+
+  .form-columns {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .job-description-input {
+    min-height: 220px;
+  }
+
+  .generation-footer {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .generation-info {
+    justify-content: center;
+  }
+
+  .generate-button {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .home-page {
+    padding: 22px 14px 25px;
+  }
+
+  .home-header h1 {
+    font-size: 25px;
+  }
+
+  .home-header p {
+    font-size: 11px;
+  }
+
+  .interview-form {
+    padding: 15px;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .section-heading h2 {
+    font-size: 16px;
+  }
+
+  .job-description-input {
+    min-height: 200px;
+  }
+
+  .profile-input {
+    min-height: 120px;
+  }
+
+  .footer-links {
+    width: 100%;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+  }
+}

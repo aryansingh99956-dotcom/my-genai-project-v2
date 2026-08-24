@@ -1,0 +1,1232 @@
+/* =========================================================
+   INTERVIEW STRATEGY PAGE
+========================================================= */
+
+.interview-page {
+  min-height: 100vh;
+  width: 100%;
+
+  margin: 0;
+  padding: 42px 50px 60px;
+
+  box-sizing: border-box;
+
+  color: #ffffff;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(0, 190, 255, 0.18),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(0, 130, 210, 0.12),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #061827 0%,
+      #073a59 48%,
+      #061b2d 100%
+    );
+}
+
+
+/* =========================================================
+   RESET INSIDE PAGE
+========================================================= */
+
+.interview-page,
+.interview-page * {
+  box-sizing: border-box;
+}
+
+.interview-page button {
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.interview-header {
+  width: 100% !important;
+  max-width: 1180px !important;
+
+  margin: 0 auto 28px !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.header-content {
+  width: 100%;
+}
+
+.interview-header h1 {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  font-size: 34px !important;
+  line-height: 1.15 !important;
+
+  font-weight: 800 !important;
+
+  color: #ffffff !important;
+}
+
+.interview-header p {
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+
+  font-weight: 500 !important;
+
+  color: rgba(255, 255, 255, 0.68) !important;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.interview-container {
+  width: 100% !important;
+  max-width: 1180px !important;
+
+  min-height: 640px;
+
+  margin: 0 auto !important;
+  padding: 0 !important;
+
+  display: grid !important;
+
+  grid-template-columns:
+    225px
+    minmax(0, 1fr)
+    225px !important;
+
+  grid-template-rows: minmax(640px, auto);
+
+  align-items: stretch !important;
+
+  overflow: hidden;
+
+  border: 1px solid
+    rgba(105, 218, 255, 0.55) !important;
+
+  border-radius: 15px !important;
+
+  background:
+    rgba(9, 57, 82, 0.78) !important;
+
+  box-shadow:
+    0 25px 65px
+      rgba(0, 0, 0, 0.35) !important;
+}
+
+
+/* =========================================================
+   LEFT SIDEBAR
+========================================================= */
+
+.interview-sidebar {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+
+  padding: 24px 14px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  align-items: stretch !important;
+
+  background:
+    rgba(7, 40, 59, 0.72) !important;
+
+  border-right:
+    1px solid
+    rgba(145, 214, 238, 0.28) !important;
+}
+
+
+/* =========================================================
+   SIDEBAR TITLE
+========================================================= */
+
+.sidebar-title {
+  margin: 0 0 15px !important;
+  padding: 0 9px !important;
+
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 900 !important;
+
+  letter-spacing: 1.1px !important;
+
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+
+/* =========================================================
+   SIDEBAR ITEMS
+========================================================= */
+
+.sidebar-item {
+  width: 100% !important;
+  min-height: 42px !important;
+
+  margin: 0 0 7px !important;
+  padding: 9px 11px !important;
+
+  border: 0 !important;
+  border-radius: 8px !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 9px !important;
+
+  background: transparent !important;
+
+  color:
+    rgba(255, 255, 255, 0.74) !important;
+
+  font-size: 11px !important;
+  font-weight: 650 !important;
+
+  text-align: left !important;
+
+  cursor: pointer !important;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease !important;
+}
+
+.sidebar-item:hover {
+  background:
+    rgba(255, 255, 255, 0.07) !important;
+
+  transform: translateX(2px);
+}
+
+.sidebar-item.active {
+  background:
+    linear-gradient(
+      90deg,
+      #ff007b,
+      #ff3d99
+    ) !important;
+
+  color: #ffffff !important;
+
+  box-shadow:
+    0 8px 20px
+      rgba(255, 0, 120, 0.25) !important;
+}
+
+
+/* =========================================================
+   SIDEBAR ICON
+========================================================= */
+
+.sidebar-icon {
+  width: 20px !important;
+  min-width: 20px !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 11px !important;
+  font-weight: 900 !important;
+}
+
+.sidebar-label {
+  min-width: 0;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   DOWNLOAD BUTTON
+========================================================= */
+
+.download-resume-btn {
+  width: 100% !important;
+  min-height: 42px !important;
+
+  margin-top: 270px !important;
+  padding: 0 10px !important;
+
+  border: 0 !important;
+  border-radius: 22px !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 7px !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ff0077,
+      #ff3b97
+    ) !important;
+
+  color: #ffffff !important;
+
+  font-size: 10px !important;
+  font-weight: 850 !important;
+
+  cursor: pointer !important;
+
+  box-shadow:
+    0 8px 20px
+      rgba(255, 0, 110, 0.25) !important;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease !important;
+}
+
+.download-resume-btn:hover {
+  transform: translateY(-2px) !important;
+
+  box-shadow:
+    0 12px 25px
+      rgba(255, 0, 110, 0.38) !important;
+}
+
+.download-icon {
+  font-size: 14px !important;
+}
+
+
+/* =========================================================
+   CENTER CONTENT
+========================================================= */
+
+ .interview-content {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+  padding: 24px 22px !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  background: rgba(8, 73, 105, 0.30) !important;
+
+  /* IMPORTANT */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+.interview-content > section {
+  width: 100% !important;
+  max-width: 900px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.content-section {
+  width: 100%;
+}
+
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.section-heading {
+  width: 100% !important;
+
+  margin: 0 0 16px !important;
+  padding: 0 0 13px !important;
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.16) !important;
+}
+
+.section-heading-inner {
+  width: 100%;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  gap: 10px !important;
+}
+
+.section-heading h2 {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  font-size: 20px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 800 !important;
+
+  color: #ffffff !important;
+}
+
+.question-count {
+  flex-shrink: 0;
+
+  padding: 5px 9px !important;
+
+  border-radius: 20px !important;
+
+  background:
+    rgba(128, 176, 208, 0.42) !important;
+
+  color: #ffffff !important;
+
+  font-size: 9px !important;
+  font-weight: 800 !important;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   QUESTIONS LIST
+========================================================= */
+
+.questions-list {
+  width: 100% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 9px !important;
+}
+
+
+/* =========================================================
+   QUESTION CARD
+========================================================= */
+
+.question-card {
+  width: 100% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  border:
+    1px solid
+    rgba(104, 205, 238, 0.38) !important;
+
+  border-radius: 9px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(62, 139, 178, 0.50),
+      rgba(40, 92, 130, 0.38)
+    ) !important;
+
+  box-shadow:
+    0 5px 16px
+      rgba(0, 0, 0, 0.10) !important;
+}
+
+.question-card.open {
+  border-color:
+    rgba(255, 65, 160, 0.58) !important;
+}
+
+
+/* =========================================================
+   QUESTION HEADER
+========================================================= */
+
+.question-header {
+  width: 100% !important;
+  min-height: 58px !important;
+
+  margin: 0 !important;
+  padding: 11px 13px !important;
+
+  display: grid !important;
+
+  grid-template-columns:
+    32px
+    minmax(0, 1fr)
+    24px !important;
+
+  align-items: center !important;
+
+  gap: 9px !important;
+
+  border: 0 !important;
+
+  outline: 0 !important;
+
+  background: transparent !important;
+
+  color: #ffffff !important;
+
+  font-family: inherit !important;
+
+  text-align: left !important;
+
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   QUESTION NUMBER
+========================================================= */
+
+.question-number {
+  width: 29px !important;
+  height: 25px !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 6px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff007c,
+      #ff4ba3
+    ) !important;
+
+  color: #ffffff !important;
+
+  font-size: 9px !important;
+  font-weight: 900 !important;
+}
+
+
+/* =========================================================
+   QUESTION TEXT
+========================================================= */
+
+.question-text {
+  min-width: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #ffffff !important;
+
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+
+  font-weight: 650 !important;
+
+  word-break: break-word !important;
+}
+
+
+/* =========================================================
+   QUESTION ARROW
+========================================================= */
+
+.question-arrow {
+  width: 22px;
+  height: 22px;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  color:
+    rgba(255, 255, 255, 0.75) !important;
+
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+
+/* =========================================================
+   QUESTION DETAILS
+========================================================= */
+
+.question-details {
+  width: 100% !important;
+
+  margin: 0 !important;
+  padding: 14px 15px 16px 54px !important;
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.12) !important;
+
+  background:
+    rgba(0, 0, 0, 0.10) !important;
+}
+
+.answer-block {
+  width: 100%;
+
+  padding-top: 2px;
+}
+
+.answer-block + .answer-block {
+  margin-top: 14px;
+}
+
+.answer-label {
+  margin: 0 0 5px !important;
+
+  font-size: 8px !important;
+
+  font-weight: 900 !important;
+
+  letter-spacing: 0.8px !important;
+}
+
+.answer-block p {
+  margin: 0 !important;
+
+  color:
+    rgba(255, 255, 255, 0.83) !important;
+
+  font-size: 10px !important;
+
+  line-height: 1.55 !important;
+}
+
+
+/* =========================================================
+   INTENTION
+========================================================= */
+
+.intention-block {
+  padding-left: 10px !important;
+
+  border-left:
+    2px solid #ff4aa3 !important;
+}
+
+.intention-block .answer-label {
+  color: #ff66ae !important;
+}
+
+.intention-block p {
+  color: #ffd1e6 !important;
+}
+
+
+/* =========================================================
+   MODEL ANSWER
+========================================================= */
+
+.model-block {
+  padding-left: 10px !important;
+
+  border-left:
+    2px solid #58e7ff !important;
+}
+
+.model-block .answer-label {
+  color: #58e7ff !important;
+}
+
+.model-block p {
+  color: #d0faff !important;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state {
+  width: 100% !important;
+
+  padding: 40px 20px !important;
+
+  text-align: center !important;
+
+  color:
+    rgba(255, 255, 255, 0.62) !important;
+
+  font-size: 12px !important;
+}
+
+
+/* =========================================================
+   RIGHT SIDEBAR
+========================================================= */
+
+.interview-right {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+
+  padding: 24px 16px !important;
+
+  background:
+    rgba(7, 42, 61, 0.60) !important;
+
+  border-left:
+    1px solid
+    rgba(145, 214, 238, 0.28) !important;
+}
+
+
+/* =========================================================
+   MATCH SCORE
+========================================================= */
+
+.match-score-section {
+  width: 100% !important;
+
+  text-align: center !important;
+}
+
+.match-score-section h3 {
+  margin: 0 0 17px !important;
+
+  font-size: 11px !important;
+
+  font-weight: 900 !important;
+
+  letter-spacing: 1px !important;
+
+  color: #ffffff !important;
+}
+
+
+/* =========================================================
+   SCORE CIRCLE
+========================================================= */
+
+.score-circle {
+  width: 90px !important;
+  height: 90px !important;
+
+  margin: 0 auto 12px !important;
+
+  border-radius: 50% !important;
+
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  background:
+    rgba(0, 0, 0, 0.32) !important;
+
+  border: 4px solid #86ff73 !important;
+
+  box-shadow:
+    0 0 22px
+      rgba(120, 255, 110, 0.10) !important;
+}
+
+.score-circle.score-medium {
+  border-color: #ffd45c !important;
+}
+
+.score-circle.score-weak {
+  border-color: #ff6878 !important;
+}
+
+.score-number {
+  margin: 0 !important;
+
+  font-size: 27px !important;
+  line-height: 1 !important;
+
+  font-weight: 900 !important;
+
+  color: #ffffff !important;
+}
+
+.score-percent {
+  margin-top: 3px !important;
+
+  font-size: 9px !important;
+
+  font-weight: 800 !important;
+
+  color: #ffffff !important;
+}
+
+
+/* =========================================================
+   SCORE MESSAGE
+========================================================= */
+
+.score-message {
+  font-size: 9px !important;
+
+  line-height: 1.4 !important;
+
+  font-weight: 800 !important;
+}
+
+.score-message.strong {
+  color: #8cff78 !important;
+}
+
+.score-message.medium {
+  color: #ffd45c !important;
+}
+
+.score-message.weak {
+  color: #ff7280 !important;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.right-divider {
+  width: 100% !important;
+  height: 1px !important;
+
+  margin: 22px 0 !important;
+
+  background:
+    rgba(255, 255, 255, 0.16) !important;
+}
+
+
+/* =========================================================
+   SKILL GAPS
+========================================================= */
+
+.skill-gap-section {
+  width: 100%;
+}
+
+.skill-gap-section h3 {
+  margin: 0 0 12px !important;
+
+  font-size: 11px !important;
+
+  font-weight: 900 !important;
+
+  letter-spacing: 1px !important;
+
+  color: #ffffff !important;
+}
+
+.skill-gap-list {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 7px !important;
+}
+
+.skill-gap {
+  width: 100% !important;
+
+  min-height: 38px;
+
+  padding: 8px 9px !important;
+
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  justify-content: center !important;
+
+  border-radius: 6px !important;
+
+  color: #ffffff !important;
+
+  box-sizing: border-box !important;
+}
+
+.skill-name {
+  font-size: 9px !important;
+
+  line-height: 1.3 !important;
+
+  font-weight: 850 !important;
+}
+
+.skill-severity {
+  margin-top: 2px;
+
+  font-size: 7px !important;
+
+  line-height: 1.2 !important;
+
+  font-weight: 800 !important;
+
+  text-transform: uppercase;
+}
+
+.skill-gap.high {
+  background:
+    linear-gradient(
+      90deg,
+      #d9445c,
+      #e95b6d
+    ) !important;
+}
+
+.skill-gap.medium {
+  background:
+    linear-gradient(
+      90deg,
+      #c98c3d,
+      #dda653
+    ) !important;
+}
+
+.skill-gap.low {
+  background:
+    linear-gradient(
+      90deg,
+      #32a960,
+      #40bd70
+    ) !important;
+}
+
+.no-gaps {
+  padding: 10px 0;
+
+  color:
+    rgba(255, 255, 255, 0.65);
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   ROADMAP
+========================================================= */
+
+.roadmap-list {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 10px !important;
+}
+
+.roadmap-card {
+  width: 100% !important;
+
+  margin: 0 !important;
+  padding: 13px !important;
+
+  display: flex !important;
+
+  align-items: flex-start !important;
+
+  gap: 11px !important;
+
+  border:
+    1px solid
+    rgba(120, 190, 225, 0.30) !important;
+
+  border-radius: 8px !important;
+
+  background:
+    rgba(61, 117, 154, 0.30) !important;
+}
+
+.roadmap-day {
+  flex-shrink: 0;
+
+  padding: 6px 8px !important;
+
+  border-radius: 5px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff007c,
+      #ff49a2
+    ) !important;
+
+  color: #ffffff !important;
+
+  font-size: 8px !important;
+
+  font-weight: 900 !important;
+}
+
+.roadmap-content {
+  min-width: 0;
+}
+
+.roadmap-content h3 {
+  margin: 0 0 7px !important;
+
+  font-size: 12px !important;
+
+  line-height: 1.3 !important;
+
+  font-weight: 800 !important;
+
+  color: #ffffff !important;
+}
+
+.roadmap-content ul {
+  margin: 0 !important;
+
+  padding-left: 16px !important;
+}
+
+.roadmap-content li {
+  margin: 0 0 4px !important;
+
+  font-size: 9px !important;
+
+  line-height: 1.45 !important;
+
+  color:
+    rgba(255, 255, 255, 0.78) !important;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading-page {
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.loading-box {
+  padding: 30px;
+
+  text-align: center;
+
+  border-radius: 12px;
+
+  background:
+    rgba(10, 55, 78, 0.85);
+
+  border:
+    1px solid
+    rgba(100, 210, 245, 0.25);
+}
+
+.loading-spinner {
+  width: 35px;
+  height: 35px;
+
+  margin: 0 auto 15px;
+
+  border: 3px solid
+    rgba(255, 255, 255, 0.20);
+
+  border-top-color: #ff3d98;
+
+  border-radius: 50%;
+
+  animation:
+    interview-spin 0.8s linear infinite;
+}
+
+.loading-text {
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+@keyframes interview-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.error-box {
+  max-width: 500px;
+
+  padding: 28px;
+
+  text-align: center;
+
+  border-radius: 12px;
+
+  background:
+    rgba(90, 25, 42, 0.75);
+
+  border:
+    1px solid
+    rgba(255, 100, 130, 0.35);
+}
+
+.error-title {
+  margin-bottom: 8px;
+
+  font-size: 17px;
+
+  font-weight: 800;
+}
+
+.error-message {
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  color:
+    rgba(255, 255, 255, 0.75);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1050px) {
+  .interview-page {
+    padding: 35px 25px 50px;
+  }
+
+  .interview-container {
+    grid-template-columns:
+      195px
+      minmax(0, 1fr)
+      195px !important;
+  }
+
+  .interview-sidebar {
+    padding: 20px 12px !important;
+  }
+
+  .interview-content {
+    padding: 20px 15px !important;
+  }
+
+  .interview-right {
+    padding: 20px 12px !important;
+  }
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 820px) {
+  .interview-container {
+    grid-template-columns:
+      180px
+      minmax(0, 1fr) !important;
+  }
+
+  .interview-right {
+    display: none !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 620px) {
+  .interview-page {
+    padding: 25px 12px 35px;
+  }
+
+  .interview-header h1 {
+    font-size: 28px !important;
+  }
+
+  .interview-header p {
+    font-size: 11px !important;
+  }
+
+  .interview-container {
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  .interview-sidebar {
+    border-right: 0 !important;
+
+    border-bottom:
+      1px solid
+      rgba(145, 214, 238, 0.28) !important;
+  }
+
+  .download-resume-btn {
+    margin-top: 12px !important;
+  }
+
+  .interview-content {
+    min-height: 500px;
+    overflow: visible !important;
+  }
+
+  .interview-right {
+    display: block !important;
+
+    border-left: 0 !important;
+
+    border-top:
+      1px solid
+      rgba(145, 214, 238, 0.28) !important;
+  }
+
+  .question-header {
+    grid-template-columns:
+      30px
+      minmax(0, 1fr)
+      20px !important;
+
+    padding: 10px !important;
+  }
+
+  .question-details {
+    padding-left: 45px !important;
+  }
+}
