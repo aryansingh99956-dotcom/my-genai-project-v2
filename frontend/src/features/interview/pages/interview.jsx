@@ -921,34 +921,37 @@ const Interview = () => {
         // Create browser download
         // ----------------------------------------------------
 
-        if (blob && blob.size > 0) {
+       if (blob && blob.size > 0) {
+  const url = window.URL.createObjectURL(blob);
 
-          const url =
-            window.URL.createObjectURL(
-              blob
-            );
+  // Try opening the PDF first.
+  // This works more reliably on mobile browsers.
+  const pdfWindow = window.open("", "_blank");
 
+  if (pdfWindow) {
+    pdfWindow.location.href = url;
 
-          const link =
-            document.createElement("a");
+    // Give the browser time to load the PDF
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 60000);
+  } else {
+    // Fallback for browsers that block new tabs
+    const link = document.createElement("a");
 
+    link.href = url;
+    link.download = `interview-resume-${interviewId}.pdf`;
 
-          link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-          link.download =
-            `interview-resume-${interviewId}.pdf`;
+    // Don't revoke immediately
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 60000);
+  }
 
-
-          document.body.appendChild(link);
-
-          link.click();
-
-          link.remove();
-
-
-          window.URL.revokeObjectURL(
-            url
-          );
 
         }
 
