@@ -4,8 +4,7 @@ import axios from "axios";
 // API URL
 // ============================================================
 
-const API_URL = "http://localhost:3000/api/interview";
-
+const API_URL = "https://my-genai-backend.onrender.com/api/interview";
 
 // ============================================================
 // GENERATE INTERVIEW
