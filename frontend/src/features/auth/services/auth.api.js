@@ -2,7 +2,7 @@ import axios from "axios"
 
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: "https://my-genai-backend.onrender.com",
     withCredentials: true 
 });
 
@@ -28,7 +28,7 @@ export const register = async ({username, email, password})=> {
 export const login = async({email, password})=> {
     try{
         console.log("LOGIN API CALLED",email,password);
-        const response = await api.post('api/auth/login',{
+        const response = await api.post('/api/auth/login',{
             email,
             password
         });
