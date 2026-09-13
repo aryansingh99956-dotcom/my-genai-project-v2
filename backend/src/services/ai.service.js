@@ -702,68 +702,62 @@ RETURN ONLY JSON.
       );
 
 
+     const MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.5-flash",
+];
+
+async function generateWithFallback() {
+  let lastError = null;
+
+  for (const model of MODELS) {
+    try {
+      console.log(
+        `Trying Gemini model: ${model}`
+      );
+
       const response =
         await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-
+          model,
           contents: prompt,
 
           config: {
-            responseMimeType:
-              "application/json",
-
-            responseSchema:
-              jsonSchema,
+            responseMimeType: "application/json",
+            responseSchema: jsonSchema,
           },
         });
 
-
-      const rawText =
-        response.text;
-
-
       console.log(
-        "========== GEMINI RAW INTERVIEW RESPONSE =========="
+        `Gemini model succeeded: ${model}`
       );
 
-      console.log(
-        rawText
+      return response;
+
+    } catch (error) {
+      lastError = error;
+
+      console.error(
+        `Gemini model failed: ${model}`,
+        error.message
       );
 
-      console.log(
-        "===================================================="
-      );
+      // Only move to another model for temporary availability errors
+      const status =
+        error?.status ||
+        error?.code;
 
-
-      if (!rawText) {
-        throw new Error(
-          "Gemini returned an empty response."
-        );
+      if (
+        status !== 503 &&
+        status !== 429
+      ) {
+        throw error;
       }
+    }
+  }
 
-
-      let parsedResponse;
-
-
-      try {
-        parsedResponse =
-          JSON.parse(
-            cleanText(rawText)
-          );
-      } catch (error) {
-        console.error(
-          "JSON PARSE ERROR:",
-          error
-        );
-
-        throw new Error(
-          "Gemini returned invalid JSON."
-        );
-      }
-
-
-      return parsedResponse;
-    };
+  throw lastError;
+}
 
 
     // ========================================================
@@ -968,4 +962,4 @@ module.exports = {
   generateResumePdf,
   interviewReportSchema,
   validateInterviewReport,
-};
+};F
