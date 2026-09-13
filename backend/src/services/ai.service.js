@@ -4,7 +4,7 @@ const { zodToJsonSchema } = require("zod-to-json-schema");
 const puppeteer = require("puppeteer");
 
 // =========================================================
-// GEMINI AI
+// GEMINI
 // =========================================================
 
 const ai = new GoogleGenAI({
@@ -16,49 +16,41 @@ const ai = new GoogleGenAI({
 // INTERVIEW REPORT SCHEMA
 // =========================================================
 
+const questionSchema = z.object({
+  question: z.string().min(1),
+  intention: z.string().min(1),
+  answer: z.string().min(1),
+});
+
+const skillGapSchema = z.object({
+  skill: z.string().min(1),
+  severity: z.enum(["low", "medium", "high"]),
+});
+
+const preparationDaySchema = z.object({
+  day: z.number().int().min(1),
+  focus: z.string().min(1),
+  tasks: z.array(z.string().min(1)).min(1),
+});
+
 const interviewReportSchema = z.object({
+  matchScore: z.number().min(0).max(100),
 
-  matchScore: z
-    .number()
-    .min(0)
-    .max(100),
+  technicalQuestions: z
+    .array(questionSchema)
+    .length(5),
 
-  technicalQuestions: z.array(
-    z.object({
-      question: z.string(),
-      intention: z.string(),
-      answer: z.string(),
-    })
-  ),
+  behavioralQuestions: z
+    .array(questionSchema)
+    .length(5),
 
-  behavioralQuestions: z.array(
-    z.object({
-      question: z.string(),
-      intention: z.string(),
-      answer: z.string(),
-    })
-  ),
+  skillGaps: z.array(skillGapSchema),
 
-  skillGaps: z.array(
-    z.object({
-      skill: z.string(),
-      severity: z.enum([
-        "low",
-        "medium",
-        "high",
-      ]),
-    })
-  ),
+  preparationPlan: z
+    .array(preparationDaySchema)
+    .min(1),
 
-  preparationPlan: z.array(
-    z.object({
-      day: z.number().int().min(1),
-      focus: z.string(),
-      tasks: z.array(z.string()),
-    })
-  ),
-
-  title: z.string(),
+  title: z.string().min(1),
 });
 
 
@@ -67,1424 +59,642 @@ const interviewReportSchema = z.object({
 // =========================================================
 
 const resumePdfSchema = z.object({
-
-  html: z
-    .string()
-    .describe(
-      "Complete HTML content of the resume which can be converted into a PDF using Puppeteer."
-    ),
-
+  html: z.string().min(1),
 });
 
 
 // =========================================================
-// BASIC STRING CLEANER
+// TEXT HELPERS
 // =========================================================
 
-function toStringSafe(
-  value,
-  fallback = ""
-) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return fallback;
+function cleanText(value) {
+  if (value === undefined || value === null) {
+    return "";
   }
 
-  if (typeof value === "string") {
-    return value.trim();
-  }
-
-  return String(value).trim();
-}
-
-
-// =========================================================
-// PARSE JSON STRING SAFELY
-// =========================================================
-
-function tryParseJSON(value) {
-
-  if (
-    typeof value !== "string"
-  ) {
-    return null;
-  }
-
-  let text = value.trim();
-
-  // Remove markdown fences if Gemini adds them
-  text = text
+  return String(value)
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "")
     .trim();
+}
+
+
+// =========================================================
+// JSON PARSER
+// =========================================================
+
+function parseGeminiJSON(text) {
+  const cleaned = cleanText(text);
 
   try {
+    return JSON.parse(cleaned);
+  } catch (error) {
+    const first = cleaned.indexOf("{");
+    const last = cleaned.lastIndexOf("}");
 
-    return JSON.parse(text);
+    if (first !== -1 && last !== -1 && last > first) {
+      try {
+        return JSON.parse(
+          cleaned.substring(first, last + 1)
+        );
+      } catch {
+        throw new Error(
+          "Gemini returned invalid JSON."
+        );
+      }
+    }
 
-  } catch {
+    throw new Error(
+      "Gemini returned invalid JSON."
+    );
+  }
+}
 
+
+// =========================================================
+// REMOVE FIELD LABELS
+// =========================================================
+// This does NOT create fallback content.
+// It only removes accidental labels such as:
+// "Question: ..."
+// "Answer: ..."
+// =========================================================
+
+function removeLabel(text, labels) {
+  let value = cleanText(text);
+
+  for (const label of labels) {
+    const regex = new RegExp(
+      `^\\s*${label}\\s*[:\\-]\\s*`,
+      "i"
+    );
+
+    value = value.replace(regex, "").trim();
+  }
+
+  return value;
+}
+
+
+// =========================================================
+// NORMALIZE QUESTION OBJECT
+// =========================================================
+
+function normalizeQuestion(item) {
+  if (!item || typeof item !== "object") {
     return null;
   }
-}
 
-
-// =========================================================
-// EXTRACT OBJECT FROM A STRING
-// =========================================================
-
-function extractJSONObject(value) {
-
-  if (
-    typeof value !== "string"
-  ) {
-    return null;
-  }
-
-  const text = value.trim();
-
-  const firstBrace =
-    text.indexOf("{");
-
-  const lastBrace =
-    text.lastIndexOf("}");
-
-  if (
-    firstBrace === -1 ||
-    lastBrace === -1 ||
-    lastBrace <= firstBrace
-  ) {
-    return null;
-  }
-
-  const jsonText =
-    text.substring(
-      firstBrace,
-      lastBrace + 1
-    );
-
-  return tryParseJSON(jsonText);
-}
-
-
-// =========================================================
-// CLEAN TEXT
-// =========================================================
-
-function cleanText(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return "";
-  }
-
-  let text =
-    String(value).trim();
-
-  // Remove markdown code fences
-  text =
-    text
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-
-  return text;
-}
-
-
-// =========================================================
-// EXTRACT QUESTION
-// =========================================================
-
-function extractQuestion(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return "";
-  }
-
-  // -----------------------------------------------
-  // If already object
-  // -----------------------------------------------
-
-  if (
-    typeof value === "object"
-  ) {
-
-    return cleanText(
-      value.question
-    );
-  }
-
-  let text =
-    cleanText(value);
-
-
-  // -----------------------------------------------
-  // Try complete JSON
-  // -----------------------------------------------
-
-  let parsed =
-    tryParseJSON(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object"
-  ) {
-
-    return cleanText(
-      parsed.question
-    );
-  }
-
-
-  // -----------------------------------------------
-  // Try JSON inside string
-  // -----------------------------------------------
-
-  parsed =
-    extractJSONObject(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object" &&
-    parsed.question
-  ) {
-
-    return cleanText(
-      parsed.question
-    );
-  }
-
-
-  // -----------------------------------------------
-  // Remove accidental prefix
-  // -----------------------------------------------
-
-  text =
-    text.replace(
-      /^\s*["']?question["']?\s*:\s*/i,
-      ""
-    );
-
-
-  return text.trim();
-}
-
-
-// =========================================================
-// EXTRACT INTENTION
-// =========================================================
-
-function extractIntention(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return "";
-  }
-
-
-  // -----------------------------------------------
-  // Object
-  // -----------------------------------------------
-
-  if (
-    typeof value === "object"
-  ) {
-
-    return cleanText(
-      value.intention
-    );
-  }
-
-
-  let text =
-    cleanText(value);
-
-
-  // -----------------------------------------------
-  // JSON
-  // -----------------------------------------------
-
-  let parsed =
-    tryParseJSON(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object"
-  ) {
-
-    return cleanText(
-      parsed.intention
-    );
-  }
-
-
-  // -----------------------------------------------
-  // JSON inside text
-  // -----------------------------------------------
-
-  parsed =
-    extractJSONObject(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object" &&
-    parsed.intention
-  ) {
-
-    return cleanText(
-      parsed.intention
-    );
-  }
-
-
-  // -----------------------------------------------
-  // Remove accidental prefixes
-  // -----------------------------------------------
-
-  text =
-    text.replace(
-      /^\s*["']?intention["']?\s*:\s*/i,
-      ""
-    );
-
-  text =
-    text.replace(
-      /^\s*interviewer\s*intention\s*:\s*/i,
-      ""
-    );
-
-
-  return text.trim();
-}
-
-
-// =========================================================
-// EXTRACT ANSWER
-// =========================================================
-
-function extractAnswer(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return "";
-  }
-
-
-  // -----------------------------------------------
-  // Object
-  // -----------------------------------------------
-
-  if (
-    typeof value === "object"
-  ) {
-
-    return cleanText(
-      value.answer
-    );
-  }
-
-
-  let text =
-    cleanText(value);
-
-
-  // -----------------------------------------------
-  // JSON
-  // -----------------------------------------------
-
-  let parsed =
-    tryParseJSON(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object"
-  ) {
-
-    return cleanText(
-      parsed.answer
-    );
-  }
-
-
-  // -----------------------------------------------
-  // JSON inside text
-  // -----------------------------------------------
-
-  parsed =
-    extractJSONObject(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object" &&
-    parsed.answer
-  ) {
-
-    return cleanText(
-      parsed.answer
-    );
-  }
-
-
-  // -----------------------------------------------
-  // Remove accidental prefixes
-  // -----------------------------------------------
-
-  text =
-    text.replace(
-      /^\s*["']?answer["']?\s*:\s*/i,
-      ""
-    );
-
-  text =
-    text.replace(
-      /^\s*model\s*answer\s*:\s*/i,
-      ""
-    );
-
-
-  return text.trim();
-}
-
-
-// =========================================================
-// EXTRACT SKILL
-// =========================================================
-
-function extractSkill(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return "";
-  }
-
-
-  // -----------------------------------------------
-  // Object
-  // -----------------------------------------------
-
-  if (
-    typeof value === "object"
-  ) {
-
-    return cleanSkillName(
-      value.skill
-    );
-  }
-
-
-  let text =
-    cleanText(value);
-
-
-  // -----------------------------------------------
-  // Try JSON
-  // -----------------------------------------------
-
-  let parsed =
-    tryParseJSON(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object"
-  ) {
-
-    return cleanSkillName(
-      parsed.skill
-    );
-  }
-
-
-  // -----------------------------------------------
-  // JSON inside text
-  // -----------------------------------------------
-
-  parsed =
-    extractJSONObject(text);
-
-  if (
-    parsed &&
-    typeof parsed === "object" &&
-    parsed.skill
-  ) {
-
-    return cleanSkillName(
-      parsed.skill
-    );
-  }
-
-
-  // -----------------------------------------------
-  // Remove skill prefix
-  // -----------------------------------------------
-
-  text =
-    text.replace(
-      /^\s*["']?skill["']?\s*:\s*/i,
-      ""
-    );
-
-
-  return cleanSkillName(
-    text
+  const question = removeLabel(
+    item.question,
+    ["question", "q"]
   );
+
+  const intention = removeLabel(
+    item.intention,
+    [
+      "intention",
+      "interviewer intention",
+      "intent",
+    ]
+  );
+
+  const answer = removeLabel(
+    item.answer,
+    [
+      "answer",
+      "model answer",
+      "sample answer",
+    ]
+  );
+
+  if (!question || !intention || !answer) {
+    return null;
+  }
+
+  return {
+    question,
+    intention,
+    answer,
+  };
 }
 
 
 // =========================================================
-// CLEAN SKILL NAME
+// GENERIC / INVALID TEXT DETECTOR
 // =========================================================
 
-function cleanSkillName(value) {
+function isGenericIntention(text) {
+  const value = text.toLowerCase().trim();
+
+  const generic = [
+    "evaluate the candidate's technical understanding of this topic.",
+    "evaluate the candidate's technical understanding of this topic",
+    "evaluate the candidate's understanding of this topic.",
+    "evaluate the candidate's understanding of this topic",
+    "assess the candidate's technical understanding.",
+    "assess the candidate's technical knowledge.",
+    "evaluate the candidate's communication, problem-solving and behavioral approach.",
+    "evaluate the candidate's communication, problem-solving and behavioral approach",
+  ];
+
+  return generic.includes(value);
+}
+
+
+function isGenericAnswer(text) {
+  const value = text.toLowerCase().trim();
+
+  const generic = [
+    "the candidate should explain the concept accurately and support the explanation with a relevant example.",
+    "the candidate should explain the concept accurately and support the explanation with a relevant example",
+    "the candidate should provide a specific example from their experience and explain their actions and results.",
+    "the candidate should provide a specific example from their experience and explain their actions and results",
+    "explain the concept clearly.",
+    "give a practical example.",
+  ];
+
+  return generic.includes(value);
+}
+
+
+// =========================================================
+// CHECK FIELD CONTAMINATION
+// =========================================================
+
+function containsOtherField(text, field) {
+  const value = text.toLowerCase();
 
   if (
-    value === undefined ||
-    value === null
+    field !== "question" &&
+    (
+      value.includes("interviewer intention:") ||
+      value.includes('"intention"') ||
+      value.includes("intention:")
+    )
   ) {
-    return "";
+    return true;
   }
-
-  let skill =
-    String(value).trim();
-
-
-  // -------------------------------------------------
-  // If skill itself contains JSON
-  // -------------------------------------------------
-
-  let parsed =
-    tryParseJSON(skill);
 
   if (
-    parsed &&
-    typeof parsed === "object"
+    field !== "question" &&
+    (
+      value.includes("model answer:") ||
+      value.includes("answer:") ||
+      value.includes('"answer"')
+    )
   ) {
-
-    skill =
-      parsed.skill || "";
+    return true;
   }
 
+  if (
+    field !== "intention" &&
+    (
+      value.includes("question:") ||
+      value.includes('"question"')
+    )
+  ) {
+    return true;
+  }
 
-  // -------------------------------------------------
-  // Remove JSON-like wrappers
-  // -------------------------------------------------
-
-  skill =
-    skill
-      .replace(
-        /^\s*["']?skill["']?\s*:\s*/i,
-        ""
-      )
-      .replace(
-        /^\s*["']+/,
-        ""
-      )
-      .replace(
-        /["']+\s*$/,
-        ""
-      )
-      .trim();
+  return false;
+}
 
 
-  // -------------------------------------------------
-  // Remove accidental severity
-  // -------------------------------------------------
+// =========================================================
+// VALIDATE QUESTIONS
+// =========================================================
 
-  skill =
-    skill.replace(
-      /,\s*["']?severity["']?\s*:\s*["']?(low|medium|high)["']?/i,
-      ""
+function validateQuestions(
+  questions,
+  type
+) {
+  if (!Array.isArray(questions)) {
+    throw new Error(
+      `${type} questions are not an array.`
     );
+  }
 
+  if (questions.length !== 5) {
+    throw new Error(
+      `${type} questions must contain exactly 5 questions.`
+    );
+  }
 
-  // -------------------------------------------------
-  // Remove braces if any remain
-  // -------------------------------------------------
+  const normalized = questions.map(
+    normalizeQuestion
+  );
 
-  skill =
-    skill
-      .replace(/^\s*\{\s*/, "")
-      .replace(/\s*\}\s*$/, "")
+  if (normalized.some((item) => !item)) {
+    throw new Error(
+      `${type} question contains missing fields.`
+    );
+  }
+
+  // -------------------------------------------------------
+  // UNIQUE QUESTIONS
+  // -------------------------------------------------------
+
+  const questionSet = new Set();
+
+  for (const item of normalized) {
+    const key = item.question
+      .toLowerCase()
+      .replace(/\s+/g, " ")
       .trim();
 
+    if (questionSet.has(key)) {
+      throw new Error(
+        `${type} contains duplicate questions.`
+      );
+    }
 
-  // -------------------------------------------------
-  // Never allow these as skill names
-  // -------------------------------------------------
+    questionSet.add(key);
+  }
 
-  const invalidSkills = [
+  // -------------------------------------------------------
+  // UNIQUE INTENTIONS
+  // -------------------------------------------------------
+
+  const intentionSet = new Set();
+
+  for (const item of normalized) {
+    const key = item.intention
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (isGenericIntention(item.intention)) {
+      throw new Error(
+        `${type} contains a generic interviewer intention.`
+      );
+    }
+
+    if (intentionSet.has(key)) {
+      throw new Error(
+        `${type} contains duplicate interviewer intentions.`
+      );
+    }
+
+    intentionSet.add(key);
+  }
+
+  // -------------------------------------------------------
+  // ANSWERS
+  // -------------------------------------------------------
+
+  const answerSet = new Set();
+
+  for (const item of normalized) {
+    const key = item.answer
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (isGenericAnswer(item.answer)) {
+      throw new Error(
+        `${type} contains a generic answer.`
+      );
+    }
+
+    if (answerSet.has(key)) {
+      throw new Error(
+        `${type} contains duplicate answers.`
+      );
+    }
+
+    answerSet.add(key);
+
+    if (
+      containsOtherField(
+        item.answer,
+        "answer"
+      )
+    ) {
+      throw new Error(
+        `${type} answer contains another field.`
+      );
+    }
+  }
+
+  // -------------------------------------------------------
+  // FIELD CONTAMINATION
+  // -------------------------------------------------------
+
+  for (const item of normalized) {
+    if (
+      containsOtherField(
+        item.question,
+        "question"
+      )
+    ) {
+      throw new Error(
+        `${type} question contains another field.`
+      );
+    }
+
+    if (
+      containsOtherField(
+        item.intention,
+        "intention"
+      )
+    ) {
+      throw new Error(
+        `${type} intention contains another field.`
+      );
+    }
+  }
+
+  return normalized;
+}
+
+
+// =========================================================
+// SKILL GAP NORMALIZATION
+// =========================================================
+
+function normalizeSkillGaps(skillGaps) {
+  if (!Array.isArray(skillGaps)) {
+    throw new Error(
+      "skillGaps must be an array."
+    );
+  }
+
+  const invalidNames = new Set([
     "skill",
     "skills",
     "severity",
     "high",
     "medium",
     "low",
-    "{",
-    "}",
-    "{ skill",
     "skill:",
-  ];
+    "severity:",
+  ]);
 
+  const result = [];
 
-  if (
-    invalidSkills.includes(
-      skill.toLowerCase()
-    )
-  ) {
-    return "";
-  }
+  for (const item of skillGaps) {
+    if (
+      !item ||
+      typeof item !== "object"
+    ) {
+      continue;
+    }
 
+    let skill = cleanText(item.skill);
 
-  return skill;
-}
+    let severity =
+      cleanText(item.severity)
+        .toLowerCase();
 
-
-// =========================================================
-// NORMALIZE SEVERITY
-// =========================================================
-
-function normalizeSeverity(
-  value
-) {
-
-  let severity =
-    String(
-      value || "medium"
-    )
-      .toLowerCase()
+    skill = skill
+      .replace(/^skill\s*:\s*/i, "")
+      .replace(/^["']|["']$/g, "")
       .trim();
 
+    severity = severity
+      .replace(/^severity\s*:\s*/i, "")
+      .replace(/^["']|["']$/g, "")
+      .trim();
 
-  // Only these 3 values are allowed
-  if (
-    severity !== "low" &&
-    severity !== "medium" &&
-    severity !== "high"
-  ) {
-    severity = "medium";
+    if (
+      !skill ||
+      invalidNames.has(
+        skill.toLowerCase()
+      )
+    ) {
+      continue;
+    }
+
+    if (
+      !["low", "medium", "high"].includes(
+        severity
+      )
+    ) {
+      throw new Error(
+        `Invalid skill severity: ${severity}`
+      );
+    }
+
+    result.push({
+      skill,
+      severity,
+    });
   }
 
-
-  return severity;
+  return result;
 }
 
 
 // =========================================================
-// NORMALIZE QUESTIONS
+// PREPARATION PLAN
 // =========================================================
 
-function normalizeQuestions(
-  questions,
-  type = "technical"
-) {
-
-  if (
-    !Array.isArray(questions)
-  ) {
-    return [];
-  }
-
-
-  return questions
-    .map(
-      (item, index) => {
-
-        // =================================================
-        // STRING ITEM
-        // =================================================
-
-        if (
-          typeof item === "string"
-        ) {
-
-          let parsed =
-            tryParseJSON(item);
-
-          if (!parsed) {
-            parsed =
-              extractJSONObject(item);
-          }
-
-
-          // -----------------------------------------------
-          // Gemini accidentally returned complete object
-          // inside a string
-          // -----------------------------------------------
-
-          if (
-            parsed &&
-            typeof parsed === "object"
-          ) {
-
-            let question =
-              extractQuestion(
-                parsed.question
-              );
-
-            let intention =
-              extractIntention(
-                parsed.intention
-              );
-
-            let answer =
-              extractAnswer(
-                parsed.answer
-              );
-
-
-            return {
-
-              question:
-                question ||
-                `Interview question ${index + 1}`,
-
-              intention:
-                intention ||
-                (
-                  type === "technical"
-                    ? "Evaluate the candidate's technical understanding of this topic."
-                    : "Evaluate the candidate's communication, problem-solving and behavioral approach."
-                ),
-
-              answer:
-                answer ||
-                (
-                  type === "technical"
-                    ? "The candidate should explain the concept accurately and support the explanation with a relevant example."
-                    : "The candidate should provide a specific example from their experience and explain their actions and results."
-                ),
-
-            };
-          }
-
-
-          // -----------------------------------------------
-          // Plain string
-          // -----------------------------------------------
-
-          return {
-
-            question:
-              extractQuestion(item) ||
-              `Interview question ${index + 1}`,
-
-            intention:
-              type === "technical"
-                ? "Evaluate the candidate's technical understanding of this topic."
-                : "Evaluate the candidate's communication, problem-solving and behavioral approach.",
-
-            answer:
-              type === "technical"
-                ? "The candidate should explain the concept accurately and support the explanation with a relevant example."
-                : "The candidate should provide a specific example from their experience and explain their actions and results.",
-
-          };
-        }
-
-
-        // =================================================
-        // OBJECT ITEM
-        // =================================================
-
-        let itemObject =
-          item;
-
-
-        // Sometimes nested object is inside a field
-        if (
-          typeof itemObject === "string"
-        ) {
-
-          itemObject =
-            tryParseJSON(
-              itemObject
-            );
-        }
-
-
-        let question =
-          extractQuestion(
-            itemObject?.question
-          );
-
-
-        let intention =
-          extractIntention(
-            itemObject?.intention
-          );
-
-
-        let answer =
-          extractAnswer(
-            itemObject?.answer
-          );
-
-
-        // =================================================
-        // IMPORTANT:
-        // If question accidentally contains the whole object,
-        // extract ONLY question.
-        // =================================================
-
-        const questionParsed =
-          extractJSONObject(
-            question
-          );
-
-        if (
-          questionParsed &&
-          typeof questionParsed === "object"
-        ) {
-
-          question =
-            extractQuestion(
-              questionParsed.question
-            );
-
-          if (
-            !intention &&
-            questionParsed.intention
-          ) {
-            intention =
-              extractIntention(
-                questionParsed.intention
-              );
-          }
-
-          if (
-            !answer &&
-            questionParsed.answer
-          ) {
-            answer =
-              extractAnswer(
-                questionParsed.answer
-              );
-          }
-        }
-
-
-        // =================================================
-        // IMPORTANT:
-        // If intention accidentally contains whole object
-        // =================================================
-
-        const intentionParsed =
-          extractJSONObject(
-            intention
-          );
-
-        if (
-          intentionParsed &&
-          typeof intentionParsed === "object"
-        ) {
-
-          intention =
-            extractIntention(
-              intentionParsed.intention
-            );
-
-          if (
-            !question &&
-            intentionParsed.question
-          ) {
-            question =
-              extractQuestion(
-                intentionParsed.question
-              );
-          }
-
-          if (
-            !answer &&
-            intentionParsed.answer
-          ) {
-            answer =
-              extractAnswer(
-                intentionParsed.answer
-              );
-          }
-        }
-
-
-        // =================================================
-        // IMPORTANT:
-        // If answer accidentally contains whole object
-        // =================================================
-
-        const answerParsed =
-          extractJSONObject(
-            answer
-          );
-
-        if (
-          answerParsed &&
-          typeof answerParsed === "object"
-        ) {
-
-          answer =
-            extractAnswer(
-              answerParsed.answer
-            );
-
-          if (
-            !question &&
-            answerParsed.question
-          ) {
-            question =
-              extractQuestion(
-                answerParsed.question
-              );
-          }
-
-          if (
-            !intention &&
-            answerParsed.intention
-          ) {
-            intention =
-              extractIntention(
-                answerParsed.intention
-              );
-          }
-        }
-
-
-        // =================================================
-        // FALLBACKS
-        // =================================================
-
-        if (!question) {
-
-          question =
-            `Interview question ${index + 1}`;
-        }
-
-
-        if (!intention) {
-
-          intention =
-            type === "technical"
-              ? "Evaluate the candidate's technical understanding of this topic."
-              : "Evaluate the candidate's communication, problem-solving and behavioral approach.";
-        }
-
-
-        if (!answer) {
-
-          answer =
-            type === "technical"
-              ? "The candidate should explain the concept accurately and support the explanation with a relevant example."
-              : "The candidate should provide a specific example from their experience and explain their actions and results.";
-        }
-
-
-        return {
-
-          question:
-            question.trim(),
-
-          intention:
-            intention.trim(),
-
-          answer:
-            answer.trim(),
-
-        };
-
-      }
+function normalizePreparationPlan(plan) {
+  if (!Array.isArray(plan)) {
+    throw new Error(
+      "preparationPlan must be an array."
     );
-}
-
-
-// =========================================================
-// NORMALIZE SKILL GAPS
-// =========================================================
-
-function normalizeSkillGaps(
-  skillGaps
-) {
-
-  if (
-    !Array.isArray(skillGaps)
-  ) {
-    return [];
   }
 
-
-  return skillGaps
-    .map(
-      (item) => {
-
-        let skill = "";
-        let severity = "medium";
-
-
-        // =================================================
-        // STRING
-        // =================================================
-
-        if (
-          typeof item === "string"
-        ) {
-
-          let parsed =
-            tryParseJSON(item);
-
-          if (!parsed) {
-            parsed =
-              extractJSONObject(item);
-          }
-
-
-          if (
-            parsed &&
-            typeof parsed === "object"
-          ) {
-
-            skill =
-              extractSkill(
-                parsed.skill
-              );
-
-            severity =
-              normalizeSeverity(
-                parsed.severity
-              );
-
-          } else {
-
-            skill =
-              extractSkill(item);
-
-            severity =
-              "medium";
-          }
-
-        }
-
-
-        // =================================================
-        // OBJECT
-        // =================================================
-
-        else if (
-          item &&
-          typeof item === "object"
-        ) {
-
-          skill =
-            extractSkill(
-              item.skill
-            );
-
-
-          severity =
-            normalizeSeverity(
-              item.severity
-            );
-
-
-          // -----------------------------------------------
-          // If skill field contains complete JSON
-          // -----------------------------------------------
-
-          const parsedSkill =
-            tryParseJSON(
-              item.skill
-            );
-
-          if (
-            parsedSkill &&
-            typeof parsedSkill === "object"
-          ) {
-
-            skill =
-              extractSkill(
-                parsedSkill.skill
-              );
-
-            severity =
-              normalizeSeverity(
-                parsedSkill.severity ||
-                item.severity
-              );
-          }
-        }
-
-
-        // =================================================
-        // FINAL CLEAN
-        // =================================================
-
-        skill =
-          cleanSkillName(skill);
-
-        severity =
-          normalizeSeverity(severity);
-
-
-        // =================================================
-        // INVALID SKILL
-        // =================================================
-
-        if (!skill) {
-          return null;
-        }
-
-
-        return {
-
-          skill,
-
-          // ONLY:
-          // low / medium / high
-          severity,
-
-        };
-
-      }
-    )
-    .filter(Boolean);
-}
-
-
-// =========================================================
-// NORMALIZE PREPARATION PLAN
-// =========================================================
-
-function normalizePreparationPlan(
-  plan
-) {
-
-  if (
-    !Array.isArray(plan)
-  ) {
-    return [];
-  }
-
-
-  const usedDays =
-    new Set();
-
-
-  return plan
-    .map(
-      (item, index) => {
-
-        let day;
-        let focus;
-        let tasks;
-
-
-        // =================================================
-        // STRING
-        // =================================================
-
-        if (
-          typeof item === "string"
-        ) {
-
-          const match =
-            item.match(
-              /day\s*(\d+)/i
-            );
-
-
-          day =
-            match
-              ? Number(match[1])
-              : index + 1;
-
-
-          focus =
-            item
-              .replace(
-                /day\s*\d+\s*[:\-]?\s*/i,
-                ""
-              )
-              .trim();
-
-
-          if (!focus) {
-
-            focus =
-              `Interview Preparation - Day ${day}`;
-          }
-
-
-          tasks = [
-
-            `Study ${focus}`,
-
-            `Practice ${focus} with practical examples`,
-
-            `Revise interview questions related to ${focus}`,
-
-          ];
-
-        }
-
-
-        // =================================================
-        // OBJECT
-        // =================================================
-
-        else {
-
-          day =
-            Number(item?.day);
-
-
-          if (
-            !Number.isInteger(day) ||
-            day < 1
-          ) {
-
-            day =
-              index + 1;
-          }
-
-
-          focus =
-            toStringSafe(
-              item?.focus,
-              `Interview Preparation - Day ${day}`
-            );
-
-
-          tasks =
-            Array.isArray(
-              item?.tasks
-            )
-
-              ? item.tasks
-                  .map(
-                    (task) =>
-                      toStringSafe(task)
-                  )
-                  .filter(Boolean)
-
-              : [];
-
-
-          if (
-            tasks.length === 0
-          ) {
-
-            tasks = [
-
-              `Study ${focus}`,
-
-              `Practice ${focus} with practical examples`,
-
-              `Revise interview questions related to ${focus}`,
-
-            ];
-          }
-        }
-
-
-        // =================================================
-        // UNIQUE DAYS
-        // =================================================
-
-        while (
-          usedDays.has(day)
-        ) {
-
-          day++;
-        }
-
-
-        usedDays.add(day);
-
-
-        return {
-
-          day,
-
-          focus,
-
-          tasks,
-
-        };
-
-      }
+  if (plan.length === 0) {
+    throw new Error(
+      "preparationPlan cannot be empty."
     );
+  }
+
+  const usedDays = new Set();
+
+  const result = plan.map(
+    (item, index) => {
+
+      if (
+        !item ||
+        typeof item !== "object"
+      ) {
+        throw new Error(
+          `Invalid preparation plan item at index ${index}.`
+        );
+      }
+
+      const day = Number(item.day);
+
+      if (
+        !Number.isInteger(day) ||
+        day < 1
+      ) {
+        throw new Error(
+          `Invalid preparation day at index ${index}.`
+        );
+      }
+
+      if (usedDays.has(day)) {
+        throw new Error(
+          `Duplicate preparation day: ${day}`
+        );
+      }
+
+      usedDays.add(day);
+
+      const focus = cleanText(
+        item.focus
+      );
+
+      const tasks = Array.isArray(
+        item.tasks
+      )
+        ? item.tasks
+            .map(cleanText)
+            .filter(Boolean)
+        : [];
+
+      if (!focus) {
+        throw new Error(
+          `Preparation day ${day} has no focus.`
+        );
+      }
+
+      if (tasks.length === 0) {
+        throw new Error(
+          `Preparation day ${day} has no tasks.`
+        );
+      }
+
+      return {
+        day,
+        focus,
+        tasks,
+      };
+    }
+  );
+
+  return result;
 }
 
 
 // =========================================================
-// GET JOB TITLE
+// TITLE
 // =========================================================
 
-function getJobTitle(
-  jobDescription
-) {
-
+function getJobTitle(jobDescription) {
   if (!jobDescription) {
-
     return "Interview Preparation";
   }
 
+  const text = String(jobDescription).trim();
 
-  const text =
-    String(jobDescription)
-      .trim();
-
-
-  const titleMatch =
-    text.match(
-      /(?:job\s*title|position|role)\s*[:\-]\s*([^\n]+)/i
-    );
-
+  const titleMatch = text.match(
+    /(?:job\s*title|position|role)\s*[:\-]\s*([^\n]+)/i
+  );
 
   if (
     titleMatch &&
     titleMatch[1]
   ) {
-
-    return titleMatch[1]
-      .trim();
+    return titleMatch[1].trim();
   }
 
-
-  const firstLine =
-    text
-      .split("\n")
-      .map(
-        (line) =>
-          line.trim()
-      )
-      .find(Boolean);
-
+  const firstLine = text
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
 
   if (
     firstLine &&
-    firstLine.length < 100
+    firstLine.length <= 100
   ) {
-
     return firstLine;
   }
-
 
   return "Interview Preparation";
 }
 
 
 // =========================================================
-// NORMALIZE COMPLETE INTERVIEW REPORT
+// COMPLETE REPORT NORMALIZATION
 // =========================================================
 
 function normalizeInterviewReport(
   data,
   jobDescription
 ) {
-
-  // =====================================================
-  // MATCH SCORE
-  // =====================================================
-
-  let matchScore =
-    Number(
-      data?.matchScore
+  if (
+    !data ||
+    typeof data !== "object"
+  ) {
+    throw new Error(
+      "Gemini returned an invalid interview report."
     );
+  }
 
+  const matchScore = Number(
+    data.matchScore
+  );
 
   if (
     !Number.isFinite(matchScore)
   ) {
-
-    matchScore = 0;
+    throw new Error(
+      "Invalid matchScore."
+    );
   }
 
-
-  matchScore =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        matchScore
-      )
+  const technicalQuestions =
+    validateQuestions(
+      data.technicalQuestions,
+      "Technical"
     );
 
+  const behavioralQuestions =
+    validateQuestions(
+      data.behavioralQuestions,
+      "Behavioral"
+    );
 
-  // =====================================================
-  // NORMALIZED REPORT
-  // =====================================================
+  const skillGaps =
+    normalizeSkillGaps(
+      data.skillGaps
+    );
 
-  const normalizedReport = {
+  const preparationPlan =
+    normalizePreparationPlan(
+      data.preparationPlan
+    );
 
-    matchScore,
+  const title =
+    cleanText(
+      data.title
+    ) ||
+    getJobTitle(
+      jobDescription
+    );
 
-    technicalQuestions:
-      normalizeQuestions(
-        data?.technicalQuestions,
-        "technical"
-      ),
-
-    behavioralQuestions:
-      normalizeQuestions(
-        data?.behavioralQuestions,
-        "behavioral"
-      ),
-
-    skillGaps:
-      normalizeSkillGaps(
-        data?.skillGaps
-      ),
-
-    preparationPlan:
-      normalizePreparationPlan(
-        data?.preparationPlan
-      ),
-
-    title:
-      toStringSafe(
-        data?.title,
-        getJobTitle(
-          jobDescription
+  const finalReport = {
+    matchScore: Math.round(
+      Math.max(
+        0,
+        Math.min(
+          100,
+          matchScore
         )
-      ),
+      )
+    ),
 
+    technicalQuestions,
+
+    behavioralQuestions,
+
+    skillGaps,
+
+    preparationPlan,
+
+    title,
   };
 
-
-  // =====================================================
-  // TITLE FALLBACK
-  // =====================================================
-
-  if (
-    !normalizedReport.title
-  ) {
-
-    normalizedReport.title =
-      getJobTitle(
-        jobDescription
-      );
-  }
-
-
-  // =====================================================
-  // FINAL ZOD VALIDATION
-  // =====================================================
-
+  // Final Zod validation
   return interviewReportSchema.parse(
-    normalizedReport
+    finalReport
   );
 }
 
@@ -1494,64 +704,85 @@ function normalizeInterviewReport(
 // =========================================================
 
 async function generateInterviewReport({
-
   resume,
-
   selfDescription,
-
   jobDescription,
-
 }) {
 
   const prompt = `
-
 You are an expert technical interviewer and career advisor.
 
-Generate a highly personalized interview preparation report based ONLY
-on the candidate information and job description.
+Generate a personalized interview preparation report using ONLY:
+
+1. Candidate resume
+2. Candidate self description
+3. Job description
 
 =========================================================
 CANDIDATE RESUME
 =========================================================
 
-${resume}
+${resume || "Not provided"}
 
 =========================================================
 SELF DESCRIPTION
 =========================================================
 
-${selfDescription}
+${selfDescription || "Not provided"}
 
 =========================================================
 JOB DESCRIPTION
 =========================================================
 
-${jobDescription}
+${jobDescription || "Not provided"}
 
 =========================================================
-ABSOLUTE JSON REQUIREMENTS
+ABSOLUTE OUTPUT RULE
 =========================================================
 
-Return ONLY valid JSON.
+Return ONLY JSON.
 
-Do not return Markdown.
+No Markdown.
 
-Do not return explanations.
+No code fences.
 
-Do not put JSON objects inside strings.
+No explanations.
 
-Every field must contain its actual value.
+Do NOT put JSON inside strings.
 
 =========================================================
-EXACT STRUCTURE
+EXACT JSON STRUCTURE
 =========================================================
 
 {
   "matchScore": 0,
-  "technicalQuestions": [],
-  "behavioralQuestions": [],
-  "skillGaps": [],
-  "preparationPlan": [],
+  "technicalQuestions": [
+    {
+      "question": "",
+      "intention": "",
+      "answer": ""
+    }
+  ],
+  "behavioralQuestions": [
+    {
+      "question": "",
+      "intention": "",
+      "answer": ""
+    }
+  ],
+  "skillGaps": [
+    {
+      "skill": "",
+      "severity": "low"
+    }
+  ],
+  "preparationPlan": [
+    {
+      "day": 1,
+      "focus": "",
+      "tasks": ["", "", ""]
+    }
+  ],
   "title": ""
 }
 
@@ -1559,186 +790,172 @@ EXACT STRUCTURE
 TECHNICAL QUESTIONS
 =========================================================
 
-Generate EXACTLY 5 technical questions.
+Generate EXACTLY 5.
 
-Each item MUST be:
+Every object has exactly these fields:
 
-{
-  "question": "ONLY THE QUESTION",
-  "intention": "ONLY THE INTERVIEWER INTENTION",
-  "answer": "ONLY THE ACTUAL ANSWER"
-}
+question
+intention
+answer
 
-CRITICAL:
+IMPORTANT:
 
-The "question" field must contain ONLY the question.
+QUESTION FIELD:
+Contains ONLY the interview question.
 
-DO NOT write:
+Example:
 
-"question: ..."
+"What is the difference between WHERE and HAVING in SQL?"
 
-DO NOT write:
+Correct.
 
-{
-  "question": "...",
-  "intention": "...",
-  "answer": "..."
-}
+Incorrect:
 
-inside the question string.
+"question: What is the difference..."
 
-The "intention" field must contain ONLY why the interviewer asks
-that question.
+Incorrect:
 
-The "answer" field must contain ONLY the actual answer to that
-question.
+"Question: ..., intention: ..., answer: ..."
 
-Do NOT put the question inside the answer.
+---------------------------------------------------------
 
-Do NOT put the intention inside the answer.
+INTENTION FIELD:
+Contains ONLY the reason the interviewer asks this question.
 
-Do NOT put JSON inside the answer.
+Example:
 
-Every answer must directly answer its own question.
+"To assess the candidate's ability to distinguish row-level filtering from group-level filtering in SQL."
 
-Every question must have a unique intention.
+Do NOT repeat the question.
 
-Every question must have a unique answer.
+Do NOT include "intention:".
+
+Do NOT include answer content.
+
+---------------------------------------------------------
+
+ANSWER FIELD:
+Contains ONLY the actual answer the candidate could give.
+
+Example:
+
+"WHERE filters individual rows before grouping, while HAVING filters groups after GROUP BY. WHERE is normally used for row-level conditions, whereas HAVING is used when the condition depends on an aggregate such as COUNT or SUM."
+
+Do NOT repeat the question.
+
+Do NOT explain what the interviewer wants.
+
+Do NOT write "The candidate should..."
+
+Do NOT write "Model answer:".
+
+=========================================================
+TECHNICAL UNIQUENESS
+=========================================================
+
+All 5 technical questions must be different.
+
+All 5 intentions must be different.
+
+All 5 answers must be different.
+
+Each answer must directly answer ONLY its corresponding question.
 
 =========================================================
 BEHAVIORAL QUESTIONS
 =========================================================
 
-Generate EXACTLY 5 behavioral questions.
+Generate EXACTLY 5.
 
-Each item MUST be:
+Use candidate information from the resume and self description.
+
+Do NOT invent experiences.
+
+Each object:
 
 {
-  "question": "ONLY THE QUESTION",
-  "intention": "ONLY THE INTERVIEWER INTENTION",
-  "answer": "ONLY THE ACTUAL SAMPLE ANSWER"
+  "question": "ONLY QUESTION",
+  "intention": "ONLY INTERVIEWER INTENTION",
+  "answer": "ONLY ACTUAL SAMPLE ANSWER"
 }
 
-Again:
+The answer must be an actual answer that the candidate could adapt.
 
-question = ONLY question
+Do NOT write:
 
-intention = ONLY intention
+"Use STAR method."
 
-answer = ONLY answer
+Do NOT write:
 
-Do NOT mix these fields.
+"The candidate should..."
 
-Do NOT return JSON inside any field.
-
-Do NOT invent experiences that are not supported by the
-candidate resume or self description.
+Each behavioral question needs a UNIQUE intention and UNIQUE answer.
 
 =========================================================
 SKILL GAPS
 =========================================================
 
-Compare the candidate's skills with the job description.
+Compare the candidate with the job description.
 
-Return actual missing or weak skills.
+Return only actual skills that are missing, weak, or insufficiently demonstrated.
 
-Each item MUST be EXACTLY:
-
-{
-  "skill": "Actual Skill Name",
-  "severity": "high"
-}
-
-The skill field MUST contain ONLY the skill name.
-
-Examples:
-
-"Advanced SQL"
-
-"Python"
-
-"Pandas"
-
-"Power BI"
-
-"Data Visualization"
-
-"Statistics"
-
-"REST API Development"
-
-"System Design"
-
-"Cloud Deployment"
-
-NEVER return these as skill names:
-
-"skill"
-
-"skills"
-
-"severity"
-
-"high"
-
-"medium"
-
-"low"
-
-IMPORTANT:
-
-severity MUST contain ONLY ONE of these exact values:
-
-"low"
-
-"medium"
-
-"high"
-
-Nothing else.
-
-Do NOT write:
-
-"severity: high"
-
-Do NOT write:
-
-"high severity"
-
-Do NOT write:
-
-{
-  "severity": "high"
-}
-
-inside the severity string.
-
-Correct:
+Each item:
 
 {
   "skill": "Power BI",
   "severity": "high"
 }
 
+The skill field contains ONLY the actual skill name.
+
+The severity field contains ONLY:
+
+"low"
+
+OR
+
+"medium"
+
+OR
+
+"high"
+
+Nothing else.
+
+NEVER:
+
+{
+  "skill": "skill",
+  "severity": "high"
+}
+
+NEVER put "severity:" inside the severity value.
+
+NEVER put "skill:" inside the skill value.
+
+If there are no genuine gaps, return:
+
+"skillGaps": []
+
 =========================================================
-PREPARATION PLAN
+PREPARATION ROAD MAP
 =========================================================
 
-Generate a multi-day preparation plan.
+Generate at least 5 unique days.
 
-Each day must be unique.
-
-Each item MUST be:
+Each day:
 
 {
   "day": 1,
-  "focus": "Main topic",
+  "focus": "Specific topic",
   "tasks": [
-    "Task 1",
-    "Task 2",
-    "Task 3"
+    "Specific task",
+    "Specific task",
+    "Specific task"
   ]
 }
+
+IMPORTANT:
 
 day MUST be a NUMBER.
 
@@ -1750,61 +967,59 @@ Incorrect:
 
 "day": "Day 1"
 
-=========================================================
-TITLE
-=========================================================
+Every day must be unique.
 
-"title" MUST contain the actual job title from the job description.
+Focus should target the candidate's actual skill gaps and job requirements.
 
 =========================================================
 MATCH SCORE
 =========================================================
 
-matchScore MUST be a NUMBER from 0 to 100.
+Number from 0 to 100.
 
 =========================================================
-FINAL VALIDATION
+TITLE
 =========================================================
 
-Before returning the JSON verify:
+Use the actual job title from the job description.
+
+=========================================================
+FINAL CHECK
+=========================================================
+
+Before returning JSON verify:
 
 1. Exactly 5 technical questions.
 2. Exactly 5 behavioral questions.
-3. Question contains ONLY question.
-4. Intention contains ONLY intention.
-5. Answer contains ONLY answer.
-6. No question is inside answer.
-7. No intention is inside answer.
-8. No JSON is inside a string.
-9. Every technical answer is different and question-specific.
-10. Every behavioral answer is question-specific.
-11. Skill contains ONLY an actual skill name.
-12. Severity contains ONLY "low", "medium", or "high".
-13. No "skill:" text.
-14. No "severity:" text.
-15. Preparation day is a number.
-16. Preparation days are unique.
-17. Return ONLY valid JSON.
+3. Every question contains ONLY the question.
+4. Every intention contains ONLY the interviewer intention.
+5. Every answer contains ONLY the answer.
+6. No answer contains the question.
+7. No answer contains the intention.
+8. No intention contains the question.
+9. No generic intention.
+10. No generic answer.
+11. Every technical intention is unique.
+12. Every technical answer is unique.
+13. Every behavioral intention is unique.
+14. Every behavioral answer is unique.
+15. Skill is an actual skill name.
+16. Severity is ONLY low, medium, or high.
+17. Road map exists.
+18. Road map has multiple unique numeric days.
+19. Return ONLY JSON.
+
+DO NOT BREAK THESE RULES.
 `;
 
-
   try {
-
-    // =====================================================
-    // GEMINI REQUEST
-    // =====================================================
-
     const response =
       await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
 
-        model:
-          "gemini-3-flash-preview",
-
-        contents:
-          prompt,
+        contents: prompt,
 
         config: {
-
           responseMimeType:
             "application/json",
 
@@ -1812,29 +1027,20 @@ Before returning the JSON verify:
             zodToJsonSchema(
               interviewReportSchema
             ),
-
         },
-
       });
-
-
-    // =====================================================
-    // CHECK RESPONSE
-    // =====================================================
 
     if (
       !response ||
       !response.text
     ) {
-
       throw new Error(
-        "Gemini returned an empty response."
+        "Gemini returned an empty interview report."
       );
     }
 
-
     console.log(
-      "\n========== GEMINI RAW RESPONSE ==========\n"
+      "\n========== GEMINI RAW INTERVIEW RESPONSE ==========\n"
     );
 
     console.log(
@@ -1842,51 +1048,19 @@ Before returning the JSON verify:
     );
 
     console.log(
-      "\n=========================================\n"
+      "\n====================================================\n"
     );
 
-
-    // =====================================================
-    // PARSE JSON
-    // =====================================================
-
-    let parsedResponse;
-
-
-    try {
-
-      parsedResponse =
-        JSON.parse(
-          response.text
-        );
-
-    } catch (jsonError) {
-
-      console.error(
-        "Gemini JSON parse error:",
-        jsonError
+    const parsedResponse =
+      parseGeminiJSON(
+        response.text
       );
-
-      throw new Error(
-        "Gemini returned invalid JSON."
-      );
-    }
-
-
-    // =====================================================
-    // NORMALIZE
-    // =====================================================
 
     const finalReport =
       normalizeInterviewReport(
         parsedResponse,
         jobDescription
       );
-
-
-    // =====================================================
-    // LOG FINAL CLEAN REPORT
-    // =====================================================
 
     console.log(
       "\n========== FINAL INTERVIEW REPORT ==========\n"
@@ -1903,7 +1077,6 @@ Before returning the JSON verify:
     console.log(
       "\n============================================\n"
     );
-
 
     return finalReport;
 
@@ -1926,25 +1099,19 @@ Before returning the JSON verify:
 async function generatePdfFromHtml(
   htmlContent
 ) {
-
   const browser =
     await puppeteer.launch({
-
       headless: true,
 
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
       ],
-
     });
 
-
   try {
-
     const page =
       await browser.newPage();
-
 
     await page.setContent(
       htmlContent,
@@ -1954,33 +1121,23 @@ async function generatePdfFromHtml(
       }
     );
 
-
     const pdfBuffer =
       await page.pdf({
-
         format: "A4",
 
         printBackground: true,
 
         margin: {
-
           top: "20mm",
-
           right: "20mm",
-
           bottom: "15mm",
-
           left: "15mm",
-
         },
-
       });
-
 
     return pdfBuffer;
 
   } finally {
-
     await browser.close();
   }
 }
@@ -1991,60 +1148,43 @@ async function generatePdfFromHtml(
 // =========================================================
 
 async function generateResumePdf({
-
   resume,
-
   selfDescription,
-
   jobDescription,
-
 }) {
 
   const prompt = `
-
 Generate a professional resume in HTML format.
 
 CANDIDATE RESUME:
-${resume}
+${resume || ""}
 
 SELF DESCRIPTION:
-${selfDescription}
+${selfDescription || ""}
 
 JOB DESCRIPTION:
-${jobDescription}
+${jobDescription || ""}
 
-Create a professional, clean and modern resume.
+Requirements:
 
-The resume should contain relevant sections such as:
+- Return complete HTML.
+- HTML must be suitable for A4 PDF.
+- Use inline CSS or style tag.
+- Professional and readable.
+- Do not use Markdown.
+- Do not add explanations.
+- Do not invent important personal information.
+- Return JSON with exactly one field:
 
-- Candidate Name
-- Professional Summary
-- Technical Skills
-- Education
-- Experience
-- Projects
-- Achievements
-- Certifications if available
-
-IMPORTANT REQUIREMENTS:
-
-1. Return complete valid HTML.
-2. HTML must be suitable for A4 PDF.
-3. Use inline CSS or a style tag.
-4. Make the resume professional and readable.
-5. Do not use Markdown.
-6. Do not add explanations outside HTML.
-7. Return the HTML inside JSON field "html".
-8. Do not invent important personal information.
-9. Return only JSON matching the provided schema.
+{
+  "html": "complete HTML"
+}
 `;
-
 
   try {
 
     const response =
       await ai.models.generateContent({
-
         model:
           "gemini-3-flash-preview",
 
@@ -2052,7 +1192,6 @@ IMPORTANT REQUIREMENTS:
           prompt,
 
         config: {
-
           responseMimeType:
             "application/json",
 
@@ -2060,42 +1199,31 @@ IMPORTANT REQUIREMENTS:
             zodToJsonSchema(
               resumePdfSchema
             ),
-
         },
-
       });
-
 
     if (
       !response ||
       !response.text
     ) {
-
       throw new Error(
         "Gemini returned an empty resume response."
       );
     }
 
-
     const jsonContent =
-      JSON.parse(
+      parseGeminiJSON(
         response.text
       );
-
 
     const validatedContent =
       resumePdfSchema.parse(
         jsonContent
       );
 
-
-    const pdfBuffer =
-      await generatePdfFromHtml(
-        validatedContent.html
-      );
-
-
-    return pdfBuffer;
+    return await generatePdfFromHtml(
+      validatedContent.html
+    );
 
   } catch (error) {
 
@@ -2110,13 +1238,10 @@ IMPORTANT REQUIREMENTS:
 
 
 // =========================================================
-// EXPORTS
+// EXPORT
 // =========================================================
 
 module.exports = {
-
   generateInterviewReport,
-
   generateResumePdf,
-
 };
