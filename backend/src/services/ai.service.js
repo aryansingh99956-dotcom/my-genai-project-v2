@@ -16,7 +16,7 @@ const ai = new GoogleGenAI({
 
 
 // ============================================================
-// INTERVIEW REPORT SCHEMA
+// INTERVIEW REPORT SCHEMAS
 // ============================================================
 
 const questionSchema = z.object({
@@ -40,134 +40,194 @@ const preparationPlanSchema = z.object({
 
 
 const interviewReportSchema = z.object({
-  matchScore: z.number().min(0).max(100),
 
-  technicalQuestions: z
-    .array(questionSchema)
-    .length(5),
+  matchScore:
+    z.number().min(0).max(100),
 
-  behavioralQuestions: z
-    .array(questionSchema)
-    .length(5),
+  technicalQuestions:
+    z.array(questionSchema).length(5),
 
-  skillGaps: z
-    .array(skillGapSchema),
+  behavioralQuestions:
+    z.array(questionSchema).length(5),
 
-  preparationPlan: z
-    .array(preparationPlanSchema)
-    .min(1),
+  skillGaps:
+    z.array(skillGapSchema),
 
-  title: z.string().min(1),
+  preparationPlan:
+    z.array(preparationPlanSchema).min(1),
+
+  title:
+    z.string().min(1),
+
 });
 
 
 // ============================================================
-// HELPER - CLEAN TEXT
+// CLEAN TEXT
 // ============================================================
 
 function cleanText(value) {
-  if (value === null || value === undefined) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
   return String(value)
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
-    .replace(/```$/i, "")
+    .replace(/```\s*$/i, "")
     .trim();
 }
 
 
 // ============================================================
-// HELPER - REMOVE JSON FROM NORMAL TEXT
+// CHECK IF STRING IS JSON
 // ============================================================
 
 function containsJsonObject(text) {
+
   if (typeof text !== "string") {
     return false;
   }
 
-  const value = text.trim();
+  const value =
+    text.trim();
 
   return (
-    (value.startsWith("{") && value.endsWith("}")) ||
-    (value.startsWith("[") && value.endsWith("]"))
+    (value.startsWith("{") &&
+      value.endsWith("}")) ||
+    (value.startsWith("[") &&
+      value.endsWith("]"))
   );
 }
 
 
 // ============================================================
-// VALIDATE QUESTION ARRAYS
+// VALIDATE QUESTION ARRAY
 // ============================================================
 
-function validateQuestionArray(questions, type) {
+function validateQuestionArray(
+  questions,
+  type
+) {
+
   if (!Array.isArray(questions)) {
-    throw new Error(`${type} questions are missing.`);
+
+    throw new Error(
+      `${type} questions are missing.`
+    );
+
   }
 
+
   if (questions.length !== 5) {
+
     throw new Error(
       `${type} questions must contain exactly 5 questions. Received: ${questions.length}`
     );
+
   }
 
-  questions.forEach((item, index) => {
-    const questionNumber = index + 1;
 
-    if (!item || typeof item !== "object") {
-      throw new Error(
-        `${type} question ${questionNumber} is invalid.`
-      );
-    }
+  questions.forEach(
+    (item, index) => {
 
-    if (
-      typeof item.question !== "string" ||
-      item.question.trim().length < 5
-    ) {
-      throw new Error(
-        `${type} question ${questionNumber} has an invalid question.`
-      );
-    }
+      const number =
+        index + 1;
 
-    if (
-      typeof item.intention !== "string" ||
-      item.intention.trim().length < 5
-    ) {
-      throw new Error(
-        `${type} question ${questionNumber} has an invalid intention.`
-      );
-    }
 
-    if (
-      typeof item.answer !== "string" ||
-      item.answer.trim().length < 5
-    ) {
-      throw new Error(
-        `${type} question ${questionNumber} has an invalid answer.`
-      );
-    }
+      if (
+        !item ||
+        typeof item !== "object"
+      ) {
 
-    // Don't allow JSON object inside question
-    if (containsJsonObject(item.question)) {
-      throw new Error(
-        `${type} question ${questionNumber} contains JSON inside question field.`
-      );
-    }
+        throw new Error(
+          `${type} question ${number} is invalid.`
+        );
 
-    // Don't allow JSON object inside intention
-    if (containsJsonObject(item.intention)) {
-      throw new Error(
-        `${type} question ${questionNumber} contains JSON inside intention field.`
-      );
-    }
+      }
 
-    // Don't allow JSON object inside answer
-    if (containsJsonObject(item.answer)) {
-      throw new Error(
-        `${type} question ${questionNumber} contains JSON inside answer field.`
-      );
+
+      if (
+        typeof item.question !== "string" ||
+        item.question.trim().length < 5
+      ) {
+
+        throw new Error(
+          `${type} question ${number} has an invalid question.`
+        );
+
+      }
+
+
+      if (
+        typeof item.intention !== "string" ||
+        item.intention.trim().length < 5
+      ) {
+
+        throw new Error(
+          `${type} question ${number} has an invalid intention.`
+        );
+
+      }
+
+
+      if (
+        typeof item.answer !== "string" ||
+        item.answer.trim().length < 5
+      ) {
+
+        throw new Error(
+          `${type} question ${number} has an invalid answer.`
+        );
+
+      }
+
+
+      if (
+        containsJsonObject(
+          item.question
+        )
+      ) {
+
+        throw new Error(
+          `${type} question ${number} contains JSON inside question.`
+        );
+
+      }
+
+
+      if (
+        containsJsonObject(
+          item.intention
+        )
+      ) {
+
+        throw new Error(
+          `${type} question ${number} contains JSON inside intention.`
+        );
+
+      }
+
+
+      if (
+        containsJsonObject(
+          item.answer
+        )
+      ) {
+
+        throw new Error(
+          `${type} question ${number} contains JSON inside answer.`
+        );
+
+      }
+
     }
-  });
+  );
+
 }
 
 
@@ -175,14 +235,24 @@ function validateQuestionArray(questions, type) {
 // VALIDATE COMPLETE REPORT
 // ============================================================
 
-function validateInterviewReport(report) {
-  if (!report || typeof report !== "object") {
-    throw new Error("Gemini returned an invalid report.");
+function validateInterviewReport(
+  report
+) {
+
+  if (
+    !report ||
+    typeof report !== "object"
+  ) {
+
+    throw new Error(
+      "Gemini returned an invalid report."
+    );
+
   }
 
 
   // ----------------------------------------------------------
-  // Match Score
+  // MATCH SCORE
   // ----------------------------------------------------------
 
   if (
@@ -190,12 +260,16 @@ function validateInterviewReport(report) {
     report.matchScore < 0 ||
     report.matchScore > 100
   ) {
-    throw new Error("Invalid match score.");
+
+    throw new Error(
+      "Invalid match score."
+    );
+
   }
 
 
   // ----------------------------------------------------------
-  // Technical Questions
+  // TECHNICAL QUESTIONS
   // ----------------------------------------------------------
 
   validateQuestionArray(
@@ -205,7 +279,7 @@ function validateInterviewReport(report) {
 
 
   // ----------------------------------------------------------
-  // Behavioral Questions
+  // BEHAVIORAL QUESTIONS
   // ----------------------------------------------------------
 
   validateQuestionArray(
@@ -215,108 +289,171 @@ function validateInterviewReport(report) {
 
 
   // ----------------------------------------------------------
-  // Skill Gaps
+  // SKILL GAPS
   // ----------------------------------------------------------
 
-  if (!Array.isArray(report.skillGaps)) {
-    throw new Error("Skill gaps are missing.");
+  if (
+    !Array.isArray(
+      report.skillGaps
+    )
+  ) {
+
+    throw new Error(
+      "Skill gaps are missing."
+    );
+
   }
 
-  report.skillGaps.forEach((gap, index) => {
-    if (!gap || typeof gap !== "object") {
-      throw new Error(
-        `Skill gap ${index + 1} is invalid.`
-      );
-    }
 
-    if (
-      typeof gap.skill !== "string" ||
-      !gap.skill.trim()
-    ) {
-      throw new Error(
-        `Skill gap ${index + 1} has an invalid skill.`
-      );
-    }
+  report.skillGaps.forEach(
+    (gap, index) => {
 
-    if (
-      !["low", "medium", "high"].includes(
-        gap.severity
-      )
-    ) {
-      throw new Error(
-        `Skill gap ${index + 1} has invalid severity.`
-      );
+      if (
+        !gap ||
+        typeof gap !== "object"
+      ) {
+
+        throw new Error(
+          `Skill gap ${index + 1} is invalid.`
+        );
+
+      }
+
+
+      if (
+        typeof gap.skill !== "string" ||
+        !gap.skill.trim()
+      ) {
+
+        throw new Error(
+          `Skill gap ${index + 1} has an invalid skill.`
+        );
+
+      }
+
+
+      if (
+        ![
+          "low",
+          "medium",
+          "high",
+        ].includes(
+          gap.severity
+        )
+      ) {
+
+        throw new Error(
+          `Skill gap ${index + 1} has invalid severity.`
+        );
+
+      }
+
     }
-  });
+  );
 
 
   // ----------------------------------------------------------
-  // Preparation Plan
+  // PREPARATION PLAN
   // ----------------------------------------------------------
 
-  if (!Array.isArray(report.preparationPlan)) {
+  if (
+    !Array.isArray(
+      report.preparationPlan
+    )
+  ) {
+
     throw new Error(
       "Preparation plan is missing."
     );
+
   }
 
-  if (report.preparationPlan.length === 0) {
+
+  if (
+    report.preparationPlan.length === 0
+  ) {
+
     throw new Error(
       "Preparation plan cannot be empty."
     );
+
   }
 
-  report.preparationPlan.forEach((item, index) => {
-    if (!item || typeof item !== "object") {
-      throw new Error(
-        `Preparation plan day ${index + 1} is invalid.`
-      );
-    }
 
-    if (
-      typeof item.day !== "number" ||
-      item.day < 1
-    ) {
-      throw new Error(
-        `Preparation plan day ${index + 1} has invalid day.`
-      );
-    }
+  report.preparationPlan.forEach(
+    (item, index) => {
 
-    if (
-      typeof item.focus !== "string" ||
-      !item.focus.trim()
-    ) {
-      throw new Error(
-        `Preparation plan day ${index + 1} has invalid focus.`
-      );
-    }
+      if (
+        !item ||
+        typeof item !== "object"
+      ) {
 
-    if (
-      !Array.isArray(item.tasks) ||
-      item.tasks.length === 0
-    ) {
-      throw new Error(
-        `Preparation plan day ${index + 1} has no tasks.`
-      );
+        throw new Error(
+          `Preparation plan day ${index + 1} is invalid.`
+        );
+
+      }
+
+
+      if (
+        typeof item.day !== "number" ||
+        item.day < 1
+      ) {
+
+        throw new Error(
+          `Preparation plan day ${index + 1} has invalid day.`
+        );
+
+      }
+
+
+      if (
+        typeof item.focus !== "string" ||
+        !item.focus.trim()
+      ) {
+
+        throw new Error(
+          `Preparation plan day ${index + 1} has invalid focus.`
+        );
+
+      }
+
+
+      if (
+        !Array.isArray(
+          item.tasks
+        ) ||
+        item.tasks.length === 0
+      ) {
+
+        throw new Error(
+          `Preparation plan day ${index + 1} has no tasks.`
+        );
+
+      }
+
     }
-  });
+  );
 
 
   // ----------------------------------------------------------
-  // Title
+  // TITLE
   // ----------------------------------------------------------
 
   if (
     typeof report.title !== "string" ||
     !report.title.trim()
   ) {
+
     throw new Error(
       "Job title is missing."
     );
+
   }
 
 
   return true;
+
 }
 
 
@@ -324,37 +461,50 @@ function validateInterviewReport(report) {
 // GENERATE INTERVIEW REPORT
 // ============================================================
 
-async function generateInterviewReport(jobDescription) {
+async function generateInterviewReport(
+  jobDescription
+) {
+
   try {
+
     console.log(
       "========== GENERATE INTERVIEW REPORT =========="
     );
 
 
+    // --------------------------------------------------------
+    // CHECK JOB DESCRIPTION
+    // --------------------------------------------------------
+
     if (
       !jobDescription ||
-      typeof jobDescription !== "string"
+      typeof jobDescription !== "string" ||
+      !jobDescription.trim()
     ) {
+
       throw new Error(
         "Job description is required."
       );
+
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // PROMPT
-    // ========================================================
+    // --------------------------------------------------------
 
     const prompt = `
-You are an expert technical interviewer, recruiter and career coach.
+You are an expert technical interviewer,
+recruiter and career coach.
 
-Analyze the following job description and generate a complete interview preparation report.
+Analyze the following job description and
+generate a complete interview preparation report.
 
 ==================================================
 JOB DESCRIPTION
 ==================================================
 
-${jobDescription}
+${jobDescription.trim()}
 
 ==================================================
 ABSOLUTE REQUIREMENTS
@@ -366,7 +516,7 @@ Do NOT return markdown.
 
 Do NOT return code blocks.
 
-Do NOT explain the response.
+Do NOT explain anything outside the JSON.
 
 Do NOT put JSON inside strings.
 
@@ -376,27 +526,21 @@ Do NOT put JSON inside strings.
 
 matchScore must be a NUMBER between 0 and 100.
 
-It represents how well a typical candidate profile would match the given job requirements.
-
 ==================================================
 2. TECHNICAL QUESTIONS
 ==================================================
 
 technicalQuestions MUST contain EXACTLY 5 objects.
 
-IMPORTANT:
+There MUST be exactly:
 
-There MUST be:
+1
+2
+3
+4
+5
 
-Q1
-Q2
-Q3
-Q4
-Q5
-
-Exactly 5.
-
-Every object MUST have exactly these fields:
+Every object MUST contain:
 
 {
   "question": "...",
@@ -404,57 +548,34 @@ Every object MUST have exactly these fields:
   "answer": "..."
 }
 
---------------------------------------------------
-QUESTION FIELD
---------------------------------------------------
+QUESTION:
 
-question must contain ONLY the interview question.
+The question field must contain ONLY the interview question.
 
-Example:
+INTENTION:
 
-"Explain the difference between a process and a thread."
+The intention field must contain ONLY what the interviewer wants to evaluate.
 
-DO NOT write:
+ANSWER:
 
-{
-  "question": "...",
-  "intention": "...",
-  "answer": "..."
-}
+The answer field must contain ONLY the ideal candidate answer.
 
-inside the question field.
+Do NOT mix these fields.
 
-DO NOT include "question:".
+Do NOT put JSON inside any field.
 
---------------------------------------------------
-INTENTION FIELD
---------------------------------------------------
+Do NOT write:
 
-intention must contain ONLY what the interviewer wants to evaluate.
+question:
 
-Example:
+intention:
 
-"To evaluate the candidate's understanding of operating system concurrency."
+answer:
 
-Do not repeat the question.
+inside the values.
 
---------------------------------------------------
-ANSWER FIELD
---------------------------------------------------
-
-answer must contain ONLY the ideal candidate answer.
-
-Example:
-
-"A process is an independent program in execution, while a thread is a lightweight execution unit within a process..."
-
-Do not include:
-
-"question:"
-"intention:"
-"answer:"
-
-Do not include JSON.
+Technical questions must be relevant to
+the job description.
 
 ==================================================
 3. BEHAVIORAL QUESTIONS
@@ -462,15 +583,7 @@ Do not include JSON.
 
 behavioralQuestions MUST contain EXACTLY 5 objects.
 
-Exactly:
-
-Q1
-Q2
-Q3
-Q4
-Q5
-
-Every object must contain:
+Every object MUST contain:
 
 {
   "question": "...",
@@ -478,23 +591,21 @@ Every object must contain:
   "answer": "..."
 }
 
-The same rules apply:
+question = ONLY question.
 
-question = ONLY question
+intention = ONLY interviewer intention.
 
-intention = ONLY interviewer intention
+answer = ONLY ideal answer.
 
-answer = ONLY ideal answer
-
-Do not mix fields.
+Do NOT mix fields.
 
 ==================================================
 4. SKILL GAPS
 ==================================================
 
-skillGaps must contain the skills that the candidate should improve for this job.
+skillGaps must contain skills that need improvement.
 
-Each object MUST contain:
+Every object MUST contain:
 
 {
   "skill": "Skill Name",
@@ -503,45 +614,35 @@ Each object MUST contain:
 
 severity MUST be exactly one of:
 
-"low"
-
-"medium"
-
-"high"
+low
+medium
+high
 
 Do NOT use:
 
-"Low"
-"Medium"
-"High"
-"beginner"
-"important"
-"critical"
+Low
+Medium
+High
+beginner
+important
+critical
 
-The skill field must contain ONLY the skill name.
-
-Example:
-
-{
-  "skill": "SQL",
-  "severity": "high"
-}
+skill must contain ONLY the skill name.
 
 ==================================================
 5. PREPARATION PLAN
 ==================================================
 
-Create a practical interview preparation roadmap.
+Create a practical preparation roadmap.
 
-Each object must contain:
+Every object must contain:
 
 {
   "day": 1,
-  "focus": "...",
+  "focus": "Topic",
   "tasks": [
-    "...",
-    "...",
-    "..."
+    "Task 1",
+    "Task 2"
   ]
 }
 
@@ -551,15 +652,13 @@ focus must contain the main topic.
 
 tasks must contain actionable preparation tasks.
 
-Create a useful multi-day roadmap based on the job description.
-
 ==================================================
-6. JOB TITLE
+6. TITLE
 ==================================================
 
 title must contain the actual job title.
 
-For example:
+Example:
 
 "Data Analyst"
 
@@ -567,31 +666,30 @@ or
 
 "Software Engineer"
 
-Do not put a generic title such as:
+Do NOT use:
 
 "Interview Preparation"
 
 ==================================================
-FINAL VALIDATION BEFORE RESPONDING
+FINAL CHECK
 ==================================================
 
-Before returning your answer, verify all of these:
+Before returning the response verify:
 
-1. technicalQuestions has EXACTLY 5 objects.
-2. behavioralQuestions has EXACTLY 5 objects.
-3. Every technical question has question, intention and answer.
-4. Every behavioral question has question, intention and answer.
-5. question contains ONLY the question.
-6. intention contains ONLY the intention.
-7. answer contains ONLY the answer.
-8. No field contains nested JSON as text.
-9. skillGaps exists.
-10. Every skill gap severity is exactly low, medium or high.
-11. preparationPlan exists.
-12. preparationPlan contains actionable tasks.
-13. matchScore is between 0 and 100.
-14. title contains the actual job title.
-15. Return ONLY valid JSON.
+1. technicalQuestions = EXACTLY 5
+2. behavioralQuestions = EXACTLY 5
+3. Every question has question, intention and answer
+4. question contains ONLY question text
+5. intention contains ONLY intention text
+6. answer contains ONLY answer text
+7. No field contains nested JSON
+8. skillGaps exists
+9. severity is low, medium or high
+10. preparationPlan exists
+11. preparationPlan contains tasks
+12. matchScore is between 0 and 100
+13. title is the actual job title
+14. Return ONLY JSON
 
 ==================================================
 EXPECTED STRUCTURE
@@ -599,66 +697,70 @@ EXPECTED STRUCTURE
 
 {
   "matchScore": 75,
+
   "technicalQuestions": [
     {
       "question": "Question 1",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Question 2",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Question 3",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Question 4",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Question 5",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     }
   ],
+
   "behavioralQuestions": [
     {
       "question": "Behavioral question 1",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Behavioral question 2",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Behavioral question 3",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Behavioral question 4",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     },
     {
       "question": "Behavioral question 5",
-      "intention": "What the interviewer wants to evaluate",
-      "answer": "Ideal candidate answer"
+      "intention": "Interviewer intention",
+      "answer": "Ideal answer"
     }
   ],
+
   "skillGaps": [
     {
       "skill": "Skill Name",
       "severity": "high"
     }
   ],
+
   "preparationPlan": [
     {
       "day": 1,
@@ -669,6 +771,7 @@ EXPECTED STRUCTURE
       ]
     }
   ],
+
   "title": "Actual Job Title"
 }
 
@@ -682,9 +785,9 @@ RETURN ONLY JSON.
 `;
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // JSON SCHEMA
-    // ========================================================
+    // --------------------------------------------------------
 
     const jsonSchema =
       zodToJsonSchema(
@@ -692,90 +795,124 @@ RETURN ONLY JSON.
       );
 
 
-    // ========================================================
-    // ONE GEMINI ATTEMPT
-    // ========================================================
+    // --------------------------------------------------------
+    // GENERATE ONE RESPONSE
+    // --------------------------------------------------------
 
-    const generateOnce = async () => {
-      console.log(
-        "Sending request to Gemini..."
-      );
+    const generateOnce =
+      async () => {
 
-
-     const MODELS = [
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3.5-flash",
-];
-
-async function generateWithFallback() {
-  let lastError = null;
-
-  for (const model of MODELS) {
-    try {
-      console.log(
-        `Trying Gemini model: ${model}`
-      );
-
-      const response =
-        await ai.models.generateContent({
-          model,
-          contents: prompt,
-
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: jsonSchema,
-          },
-        });
-
-      console.log(
-        `Gemini model succeeded: ${model}`
-      );
-
-      return response;
-
-    } catch (error) {
-      lastError = error;
-
-      console.error(
-        `Gemini model failed: ${model}`,
-        error.message
-      );
-
-      // Only move to another model for temporary availability errors
-      const status =
-        error?.status ||
-        error?.code;
-
-      if (
-        status !== 503 &&
-        status !== 429
-      ) {
-        throw error;
-      }
-    }
-  }
-
-  throw lastError;
-}
+        console.log(
+          "Sending request to Gemini..."
+        );
 
 
-    // ========================================================
-    // TRY UP TO 3 TIMES
-    // ========================================================
+        const response =
+          await ai.models.generateContent({
 
-    let parsedResponse = null;
-    let lastError = null;
+            model:
+              "gemini-3.8-flash",
+
+            contents:
+              prompt,
+
+            config: {
+
+              responseFormat: {
+                text: {
+
+                  mimeType:
+                    "application/json",
+
+                  schema:
+                    jsonSchema,
+
+                },
+              },
+
+            },
+
+          });
+
+
+        const rawText =
+          response.text;
+
+
+        console.log(
+          "========== GEMINI RAW INTERVIEW RESPONSE =========="
+        );
+
+        console.log(
+          rawText
+        );
+
+        console.log(
+          "===================================================="
+        );
+
+
+        if (!rawText) {
+
+          throw new Error(
+            "Gemini returned an empty response."
+          );
+
+        }
+
+
+        let parsedResponse;
+
+
+        try {
+
+          parsedResponse =
+            JSON.parse(
+              cleanText(
+                rawText
+              )
+            );
+
+        } catch (error) {
+
+          console.error(
+            "JSON PARSE ERROR:",
+            error
+          );
+
+          throw new Error(
+            "Gemini returned invalid JSON."
+          );
+
+        }
+
+
+        return parsedResponse;
+
+      };
+
+
+    // --------------------------------------------------------
+    // RETRY INVALID OUTPUT
+    // --------------------------------------------------------
+
+    let parsedResponse =
+      null;
+
+    let lastError =
+      null;
 
 
     for (
       let attempt = 1;
-      attempt <= 3;
+      attempt <= 2;
       attempt++
     ) {
+
       try {
+
         console.log(
-          `========== GEMINI ATTEMPT ${attempt}/3 ==========`
+          `========== GEMINI ATTEMPT ${attempt}/2 ==========`
         );
 
 
@@ -789,14 +926,16 @@ async function generateWithFallback() {
 
 
         console.log(
-          `Gemini response passed validation on attempt ${attempt}.`
+          "Gemini response passed validation."
         );
 
 
         break;
 
       } catch (error) {
-        lastError = error;
+
+        lastError =
+          error;
 
 
         console.error(
@@ -805,31 +944,66 @@ async function generateWithFallback() {
         );
 
 
-        if (attempt < 3) {
-          console.log(
-            "Retrying Gemini..."
-          );
+        /*
+         * IMPORTANT:
+         *
+         * If Gemini itself is temporarily unavailable
+         * (503 / 429), retrying immediately is not useful.
+         *
+         * Throw immediately so Render shows the real
+         * Gemini error instead of hiding it behind another
+         * validation error.
+         */
+
+        const status =
+          error?.status ||
+          error?.code;
+
+
+        if (
+          status === 503 ||
+          status === 429
+        ) {
+
+          throw error;
+
         }
+
+
+        if (
+          attempt < 2
+        ) {
+
+          console.log(
+            "Retrying because generated report failed validation..."
+          );
+
+        }
+
       }
+
     }
 
 
-    // ========================================================
-    // ALL ATTEMPTS FAILED
-    // ========================================================
+    // --------------------------------------------------------
+    // VALID REPORT CHECK
+    // --------------------------------------------------------
 
     if (!parsedResponse) {
+
       throw new Error(
-        `Unable to generate a valid interview report after 3 attempts. Last error: ${
-          lastError?.message || "Unknown error"
+        `Unable to generate a valid interview report. Last error: ${
+          lastError?.message ||
+          "Unknown error"
         }`
       );
+
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // FINAL ZOD VALIDATION
-    // ========================================================
+    // --------------------------------------------------------
 
     const validatedReport =
       interviewReportSchema.parse(
@@ -837,9 +1011,9 @@ async function generateWithFallback() {
       );
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // FINAL LOG
-    // ========================================================
+    // --------------------------------------------------------
 
     console.log(
       "========== FINAL VALID INTERVIEW REPORT =========="
@@ -868,7 +1042,9 @@ async function generateWithFallback() {
     );
 
     throw error;
+
   }
+
 }
 
 
@@ -877,12 +1053,15 @@ async function generateWithFallback() {
 // ============================================================
 
 async function generateResumePdf(
-  resumeHtml
+  resumeData
 ) {
-  let browser = null;
+
+  let browser =
+    null;
 
 
   try {
+
     console.log(
       "Starting Puppeteer PDF generation..."
     );
@@ -890,6 +1069,7 @@ async function generateResumePdf(
 
     browser =
       await puppeteer.launch({
+
         headless: true,
 
         args: [
@@ -898,6 +1078,7 @@ async function generateResumePdf(
           "--disable-dev-shm-usage",
           "--disable-gpu",
         ],
+
       });
 
 
@@ -905,26 +1086,174 @@ async function generateResumePdf(
       await browser.newPage();
 
 
+    // --------------------------------------------------------
+    // Support object passed from controller
+    // --------------------------------------------------------
+
+    
+
+let html;
+
+
+    if (
+      typeof resumeData === "string"
+    ) {
+
+      html =
+        resumeData;
+
+    } else {
+
+      const {
+        resume = "",
+        jobDescription = "",
+        selfDescription = "",
+      } =
+        resumeData || {};
+
+
+      html = `
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Resume</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 40px;
+  color: #222;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  margin-top: 0;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  border-bottom: 1px solid #222;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+pre {
+  white-space: pre-wrap;
+  font-family: Arial, sans-serif;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="section">
+
+<div class="section-title">
+Candidate Information
+</div>
+
+<pre>${escapeHtml(
+  selfDescription
+)}</pre>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+Resume
+</div>
+
+<pre>${escapeHtml(
+  resume
+)}</pre>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+Target Job
+</div>
+
+<pre>${escapeHtml(
+  jobDescription
+)}</pre>
+
+</div>
+
+</body>
+
+</html>
+`;
+
+    }
+
+
+    // --------------------------------------------------------
+    // Set HTML
+    // --------------------------------------------------------
+
     await page.setContent(
-      resumeHtml,
+      html,
       {
-        waitUntil: "networkidle0",
+        waitUntil:
+          "networkidle0",
       }
     );
 
 
+    // --------------------------------------------------------
+    // Generate PDF
+    // --------------------------------------------------------
+
     const pdf =
       await page.pdf({
-        format: "A4",
 
-        printBackground: true,
+        format:
+          "A4",
+
+        printBackground:
+          true,
 
         margin: {
-          top: "20px",
-          right: "20px",
-          bottom: "20px",
-          left: "20px",
+
+          top:
+            "20px",
+
+          right:
+            "20px",
+
+          bottom:
+            "20px",
+
+          left:
+            "20px",
+
         },
+
       });
 
 
@@ -947,9 +1276,56 @@ async function generateResumePdf(
   } finally {
 
     if (browser) {
+
       await browser.close();
+
     }
+
   }
+
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function escapeHtml(
+  value
+) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
 }
 
 
@@ -958,8 +1334,13 @@ async function generateResumePdf(
 // ============================================================
 
 module.exports = {
+
   generateInterviewReport,
+
   generateResumePdf,
+
   interviewReportSchema,
+
   validateInterviewReport,
-};F
+
+};
