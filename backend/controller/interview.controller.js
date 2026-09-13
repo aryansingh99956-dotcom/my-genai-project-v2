@@ -14,21 +14,22 @@ const interviewReportModel =
 // =========================================================
 
 async function generateInterviewController(req, res) {
-
   try {
 
+    // -------------------------------------------------------
     // Check uploaded resume
+    // -------------------------------------------------------
 
     if (!req.file) {
-
       return res.status(400).json({
         message: "Resume file is required.",
       });
-
     }
 
 
+    // -------------------------------------------------------
     // Parse PDF
+    // -------------------------------------------------------
 
     const parsedPdf =
       await new pdfParse.PDFParse({
@@ -37,10 +38,12 @@ async function generateInterviewController(req, res) {
 
 
     const resumeContent =
-      parsedPdf.text;
+      parsedPdf.text || "";
 
 
+    // -------------------------------------------------------
     // Get form data
+    // -------------------------------------------------------
 
     const {
       selfDescription,
@@ -48,21 +51,38 @@ async function generateInterviewController(req, res) {
     } = req.body;
 
 
+    // -------------------------------------------------------
+    // Validate job description
+    // -------------------------------------------------------
+
+    if (
+      !jobDescription ||
+      typeof jobDescription !== "string" ||
+      !jobDescription.trim()
+    ) {
+      return res.status(400).json({
+        message: "Job description is required.",
+      });
+    }
+
+
+    // -------------------------------------------------------
     // Generate AI report
+    //
+    // IMPORTANT:
+    // ai.service.js expects jobDescription as a STRING.
+    // Do NOT send an object here.
+    // -------------------------------------------------------
 
     const interviewReportByAi =
-      await generateInterviewReport({
-
-        resume: resumeContent,
-
-        selfDescription,
-
-        jobDescription,
-
-      });
+      await generateInterviewReport(
+        jobDescription.trim()
+      );
 
 
+    // -------------------------------------------------------
     // Save report
+    // -------------------------------------------------------
 
     const interviewReport =
       await interviewReportModel.create({
@@ -71,14 +91,20 @@ async function generateInterviewController(req, res) {
 
         resume: resumeContent,
 
-        selfDescription,
+        selfDescription:
+          selfDescription || "",
 
-        jobDescription,
+        jobDescription:
+          jobDescription.trim(),
 
         ...interviewReportByAi,
 
       });
 
+
+    // -------------------------------------------------------
+    // Send response
+    // -------------------------------------------------------
 
     return res.status(201).json({
 
@@ -96,15 +122,16 @@ async function generateInterviewController(req, res) {
       error
     );
 
+
     return res.status(500).json({
 
       message:
         "Failed to generate interview report.",
 
-      error: error.message,
+      error:
+        error.message,
 
     });
-
   }
 }
 
@@ -131,6 +158,10 @@ async function getInterviewReportByIdController(
       );
 
 
+    // -------------------------------------------------------
+    // Report not found
+    // -------------------------------------------------------
+
     if (!interviewReport) {
 
       return res.status(404).json({
@@ -142,6 +173,10 @@ async function getInterviewReportByIdController(
 
     }
 
+
+    // -------------------------------------------------------
+    // Send report
+    // -------------------------------------------------------
 
     return res.status(200).json({
 
@@ -159,15 +194,16 @@ async function getInterviewReportByIdController(
       error
     );
 
+
     return res.status(500).json({
 
       message:
         "Failed to get interview report.",
 
-      error: error.message,
+      error:
+        error.message,
 
     });
-
   }
 }
 
@@ -188,7 +224,9 @@ async function generateResumePdfController(
     } = req.params;
 
 
+    // -------------------------------------------------------
     // Find report
+    // -------------------------------------------------------
 
     const interviewReport =
       await interviewReportModel.findById(
@@ -208,7 +246,9 @@ async function generateResumePdfController(
     }
 
 
+    // -------------------------------------------------------
     // Get candidate information
+    // -------------------------------------------------------
 
     const {
       resume,
@@ -217,7 +257,9 @@ async function generateResumePdfController(
     } = interviewReport;
 
 
+    // -------------------------------------------------------
     // Generate PDF
+    // -------------------------------------------------------
 
     const pdfBuffer =
       await generateResumePdf({
@@ -231,7 +273,9 @@ async function generateResumePdfController(
       });
 
 
+    // -------------------------------------------------------
     // Send PDF
+    // -------------------------------------------------------
 
     res.set({
 
@@ -253,15 +297,16 @@ async function generateResumePdfController(
       error
     );
 
+
     return res.status(500).json({
 
       message:
         "Failed to generate resume PDF.",
 
-      error: error.message,
+      error:
+        error.message,
 
     });
-
   }
 }
 
