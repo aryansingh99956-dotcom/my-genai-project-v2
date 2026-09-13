@@ -1028,9 +1028,7 @@ const Interview = () => {
 
             Technical Questions
 
-            <span className="count-badge">
-              {technicalQuestions.length}
-            </span>
+            
 
           </button>
 
@@ -1050,9 +1048,7 @@ const Interview = () => {
 
             Behavioral Questions
 
-            <span className="count-badge">
-              {behavioralQuestions.length}
-            </span>
+            
 
           </button>
 
@@ -1090,9 +1086,7 @@ const Interview = () => {
 
             Skill Gaps
 
-            <span className="count-badge">
-              {skillGaps.length}
-            </span>
+            
 
           </button>
 
